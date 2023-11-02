@@ -4,6 +4,7 @@ from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from db import get_db
+from models import Owner
 
 app = FastAPI()
 
@@ -23,3 +24,10 @@ def healthchecker(db: Session = Depends(get_db)):
     except Exception as e:
         print(e)
         raise HTTPException(status_code=500, detail="Error connecting to the database")
+ 
+
+@app.get("/owners" , tags=["owners"])
+async def get_owners(db: Session = Depends(get_db)):
+    owners = db.query(Owner).all()
+
+    return owners
