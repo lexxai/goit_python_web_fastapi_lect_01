@@ -4,6 +4,7 @@ from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from db import get_db
+from shemas import OwnerModel
 from models import Owner
 
 app = FastAPI()
@@ -29,5 +30,13 @@ def healthchecker(db: Session = Depends(get_db)):
 @app.get("/owners" , tags=["owners"])
 async def get_owners(db: Session = Depends(get_db)):
     owners = db.query(Owner).all()
-
     return owners
+
+
+@app.post("/owners" , tags=["owners"])
+async def create_owner(body: OwnerModel, db: Session = Depends(get_db)):
+    owner = Owner(**body.model_dump())
+    db.add(owner)
+    db.commit()
+    db.refresh(owner)
+    return owner
