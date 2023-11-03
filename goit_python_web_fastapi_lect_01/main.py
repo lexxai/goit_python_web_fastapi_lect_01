@@ -1,5 +1,5 @@
 from typing import List
-from fastapi import FastAPI, Path, Query, Depends, HTTPException
+from fastapi import FastAPI, Path, Query, Depends, HTTPException, status
 from pydantic import BaseModel
 from sqlalchemy import text
 from sqlalchemy.orm import Session
@@ -25,13 +25,22 @@ def healthchecker(db: Session = Depends(get_db)):
         return {"message": "Welcome to FastAPI!"}
     except Exception as e:
         print(e)
-        raise HTTPException(status_code=500, detail="Error connecting to the database")
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Error connecting to the database")
  
 
 @app.get("/owners", response_model=List[OwnerResponse], name="GET GET OWNERS DESCRIBE .... ",tags=["owners"])
 async def get_owners(db: Session = Depends(get_db)):
     owners = db.query(Owner).all()
     return owners
+
+
+@app.get("/owners/{owner_id}", response_model=OwnerResponse,tags=["owners"])
+async def get_owner(owner_id: int = Path(ge=1), db: Session = Depends(get_db)):
+    owner = db.query(Owner).filter_by(id=owner_id).first()
+    if owner is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found")
+    return owner
+
 
 
 
