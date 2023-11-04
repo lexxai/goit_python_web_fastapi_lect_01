@@ -6,8 +6,8 @@ from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from db import get_db
-from shemas import OwnerModel, OwnerResponse
-from models import Owner
+from shemas import OwnerModel, OwnerResponse, CatModel, CatResponse
+from models import Owner, Cat
 
 app = FastAPI()
 
@@ -56,18 +56,21 @@ async def get_owner(owner_id: int = Path(ge=1), db: Session = Depends(get_db)):
 
 @app.post("/owners", response_model=OwnerResponse, tags=["owners"])
 async def create_owner(body: OwnerModel, db: Session = Depends(get_db)):
-    owner = db.query(Owner).filter_by(email = body.email).first()
+    owner = db.query(Owner).filter_by(email=body.email).first()
     if owner:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=f"Email is exist!")
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT, detail=f"Email is exist!"
+        )
     try:
         owner = Owner(**body.model_dump())
         db.add(owner)
         db.commit()
-        db.refresh(owner) 
+        db.refresh(owner)
     except IntegrityError as err:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Error: {err}")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail=f"Error: {err}"
+        )
     return owner
-
 
 
 @app.put("/owners/{owner_id}", response_model=OwnerResponse, tags=["owners"])
@@ -90,5 +93,69 @@ async def remove_owner(owner_id: int = Path(ge=1), db: Session = Depends(get_db)
     if owner is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found")
     db.delete(owner)
+    db.commit()
+    return None
+
+
+"""
+CATS
+"""
+
+
+@app.get(
+    "/cats",
+    response_model=List[CatResponse],
+    tags=["cats"],
+)
+async def get_cats(limit: int = 10, offset: int = 0, db: Session = Depends(get_db)):
+    cats = db.query(Cat).all()
+    return cats
+
+
+@app.get("/cats/{cat_id}", response_model=CatResponse, tags=["cats"])
+async def get_cat(cat_id: int = Path(ge=1), db: Session = Depends(get_db)):
+    cat = db.query(Cat).filter_by(id=cat_id).first()
+    if cat is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found")
+    return cat
+
+
+@app.post("/cats", response_model=CatResponse, tags=["cats"])
+async def create_cat(body: CatModel, db: Session = Depends(get_db)):
+    cat = db.query(Cat).filter_by(email=body.email).first()
+    if cat:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT, detail=f"Email is exist!"
+        )
+    try:
+        cat = cat(**body.model_dump())
+        db.add(cat)
+        db.commit()
+        db.refresh(cat)
+    except IntegrityError as err:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail=f"Error: {err}"
+        )
+    return cat
+
+
+@app.put("/cats/{cat_id}", response_model=CatResponse, tags=["cats"])
+async def update_cat(
+    body: CatModel, cat_id: int = Path(ge=1), db: Session = Depends(get_db)
+):
+    cat = db.query(Cat).filter_by(id=cat_id).first()
+    if cat is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found")
+    cat.email = body.email
+    db.commit()
+    return cat
+
+
+@app.delete("/cats/{cat_id}", status_code=status.HTTP_204_NO_CONTENT, tags=["cats"])
+async def remove_cat(cat_id: int = Path(ge=1), db: Session = Depends(get_db)):
+    cat = db.query(Cat).filter_by(id=cat_id).first()
+    if cat is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found")
+    db.delete(cat)
     db.commit()
     return None
