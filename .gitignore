@@ -5,4 +5,5 @@ __pycache__
 
 *.pyc
 
-goit_python_web_fastapi_lect_01/__pycache__/main.cpython-311.pyc
+
+*.db
