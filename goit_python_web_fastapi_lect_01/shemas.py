@@ -28,7 +28,7 @@ class CatResponse(BaseModel):
     age: int
     description: str
     vaccinated : bool 
-    owner_id: OwnerResponse
-    
+    owner: OwnerResponse
+
     class Config:
         from_attributes = True

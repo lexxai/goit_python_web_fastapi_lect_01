@@ -108,7 +108,7 @@ CATS
     tags=["cats"],
 )
 async def get_cats(limit: int = 10, offset: int = 0, db: Session = Depends(get_db)):
-    cats = db.query(Cat).all()
+    cats = db.query(Cat).limit(limit).offset(offset).all()
     return cats
 
 
@@ -122,13 +122,13 @@ async def get_cat(cat_id: int = Path(ge=1), db: Session = Depends(get_db)):
 
 @app.post("/cats", response_model=CatResponse, tags=["cats"])
 async def create_cat(body: CatModel, db: Session = Depends(get_db)):
-    cat = db.query(Cat).filter_by(email=body.email).first()
-    if cat:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT, detail=f"Email is exist!"
-        )
+    # cat = db.query(Cat).filter_by(email=body.email).first()
+    # if cat:
+    #     raise HTTPException(
+    #         status_code=status.HTTP_409_CONFLICT, detail=f"Email is exist!"
+    #     )
     try:
-        cat = cat(**body.model_dump())
+        cat = Cat(**body.model_dump())
         db.add(cat)
         db.commit()
         db.refresh(cat)
