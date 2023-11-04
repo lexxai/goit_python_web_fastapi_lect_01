@@ -56,13 +56,16 @@ async def get_owner(owner_id: int = Path(ge=1), db: Session = Depends(get_db)):
 
 @app.post("/owners", response_model=OwnerResponse, tags=["owners"])
 async def create_owner(body: OwnerModel, db: Session = Depends(get_db)):
+    owner = db.query(Owner).filter_by(email = body.email).first()
+    if owner:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=f"Email is exist!")
     try:
         owner = Owner(**body.model_dump())
         db.add(owner)
         db.commit()
         db.refresh(owner) 
     except IntegrityError as err:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=f"Email exist. Error: {err}")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Error: {err}")
     return owner
 
 
