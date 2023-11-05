@@ -1,9 +1,11 @@
 from configparser import ConfigParser
 from pathlib import Path
+from fastapi import HTTPException, status
 
 from sqlalchemy import create_engine
-from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy.exc import SQLAlchemyError
+
 
 CONFIG_FILE = Path(__file__).resolve().parent.parent.joinpath("conf/config.ini")
 config = ConfigParser()
@@ -16,12 +18,12 @@ if CONFIG_FILE.exists():
     port = config.get('DEV_DB', 'PORT')
     database = config.get('DEV_DB', 'DATABASE')
 
-    URI = f"postgresql://{username}:{password}@{domain}:{port}/{database}"
+    URI = f"postgresql+psycopg2://{username}:{password}@{domain}:{port}/{database}"
 
 # SQLALCHEMY_DATABASE_URL = "sqlite:///./sql_app.db"
 SQLALCHEMY_DATABASE_URL = URI
 
-print(SQLALCHEMY_DATABASE_URL)
+
 # engine = create_engine(
 #     SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
 # )
@@ -30,14 +32,19 @@ print(SQLALCHEMY_DATABASE_URL)
 engine = create_engine(
     SQLALCHEMY_DATABASE_URL, echo=True
 )
-DBSession = sessionmaker(bind=engine)
 
-Base = declarative_base()
+DBSession = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+# Base = declarative_base()
     
 # Dependency
 def get_db():
     db = DBSession()
     try:
         yield db
+    # except SQLAlchemyError as err:
+    #     print(err)
+    #     db.rollback()
+    #     raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(err)) 
     finally:
         db.close()
