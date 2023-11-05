@@ -1,6 +1,7 @@
 
 
-from fastapi import FastAPI, Path, Query, Depends, HTTPException, status
+import time
+from fastapi import FastAPI, Path, Query, Depends, HTTPException, Request, status
 from pydantic import BaseModel
 from sqlalchemy import text
 from sqlalchemy.orm import Session
@@ -11,6 +12,13 @@ from src.routes import cats, owners
 
 app = FastAPI()
 
+@app.middleware("http")
+async def custom_middleware(request: Request, call_next):
+    start_time = time.perf_counter()
+    response = await call_next(request)
+    duration = time.perf_counter() - start_time
+    response.headers['X-PERF'] = str(duration)
+    return response
 
 @app.get("/")
 async def main():
