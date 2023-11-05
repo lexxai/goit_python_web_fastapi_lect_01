@@ -6,7 +6,7 @@ from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from db import get_db
-from shemas import OwnerModel, OwnerResponse, CatModel, CatResponse
+from shemas import CatVactinatedModel, OwnerModel, OwnerResponse, CatModel, CatResponse
 from models import Owner, Cat
 
 app = FastAPI()
@@ -159,6 +159,21 @@ async def update_cat(
     cat.owner_id = body.owner_id 
     db.commit()
     return cat
+
+
+@app.patch("/cats/{cat_id}/vactinated", response_model=CatResponse, tags=["cats"])
+async def vactinated_cat(
+    body: CatVactinatedModel, cat_id: int = Path(ge=1), db: Session = Depends(get_db)
+):
+    cat = db.query(Cat).filter_by(id=cat_id).first()
+    if cat is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found")
+    if cat.vaccinated != body.vaccinated:
+        cat.vaccinated = body.vaccinated
+        db.commit()
+        return cat
+    else:
+        raise HTTPException(status_code=status.HTTP_304_NOT_MODIFIED, detail="")
 
 
 @app.delete("/cats/{cat_id}", status_code=status.HTTP_204_NO_CONTENT, tags=["cats"])
