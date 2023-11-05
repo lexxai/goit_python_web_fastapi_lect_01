@@ -146,7 +146,17 @@ async def update_cat(
     cat = db.query(Cat).filter_by(id=cat_id).first()
     if cat is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found")
-    cat.email = body.email
+    owner = db.query(Owner).filter_by(id=body.owner_id).first()
+    if owner is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail=f"Owner not exist!"
+        )
+    cat.nickname = body.nickname
+    cat.age = body.age
+    cat.description = body.description
+    cat.vaccinated = body.vaccinated
+    cat.nickname = body.nickname
+    cat.owner_id = body.owner_id 
     db.commit()
     return cat
 
