@@ -122,11 +122,11 @@ async def get_cat(cat_id: int = Path(ge=1), db: Session = Depends(get_db)):
 
 @app.post("/cats", response_model=CatResponse, tags=["cats"])
 async def create_cat(body: CatModel, db: Session = Depends(get_db)):
-    # cat = db.query(Cat).filter_by(email=body.email).first()
-    # if cat:
-    #     raise HTTPException(
-    #         status_code=status.HTTP_409_CONFLICT, detail=f"Email is exist!"
-    #     )
+    owner = db.query(Owner).filter_by(id=body.owner_id).first()
+    if owner is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail=f"Owner not exist!"
+        )
     try:
         cat = Cat(**body.model_dump())
         db.add(cat)
