@@ -5,9 +5,9 @@ from pydantic import BaseModel
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
-from db import get_db
-from shemas import CatVactinatedModel, OwnerModel, OwnerResponse, CatModel, CatResponse
-from models import Owner, Cat
+from src.database.db import get_db
+from src.shemas import CatVactinatedModel, OwnerModel, OwnerResponse, CatModel, CatResponse
+from src.database.models import Owner, Cat
 
 app = FastAPI()
 

@@ -1,0 +1,6 @@
+[DEV_DB]
+USERNAME=postgres
+PASSWORD=XXXXXXX
+DOMAIN=localhost
+PORT=5432
+DATABASE=fastapi
