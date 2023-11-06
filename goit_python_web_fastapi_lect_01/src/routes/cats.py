@@ -24,7 +24,7 @@ async def get_cats(limit: int = 10, offset: int = 0, db: Session = Depends(get_d
 
 @router.get("/{cat_id}", response_model=CatResponse)
 async def get_cat(cat_id: int = Path(ge=1), db: Session = Depends(get_db)):
-    cat = db.query(Cat).filter_by(id=cat_id).first()
+    cat = await repository_cats.get_cat_by_id(cat_id, db)
     if cat is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found")
     return cat
@@ -32,19 +32,10 @@ async def get_cat(cat_id: int = Path(ge=1), db: Session = Depends(get_db)):
 
 @router.post("", response_model=CatResponse, status_code=status.HTTP_201_CREATED)
 async def create_cat(body: CatModel, db: Session = Depends(get_db)):
-    owner = db.query(Owner).filter_by(id=body.owner_id).first()
-    if owner is None:
+    cat = await repository_cats.create(body, db)
+    if cat is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail=f"Owner not exist!"
-        )
-    try:
-        cat = Cat(**body.model_dump())
-        db.add(cat)
-        db.commit()
-        db.refresh(cat)
-    except IntegrityError as err:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail=f"Error: {err}"
         )
     return cat
 
