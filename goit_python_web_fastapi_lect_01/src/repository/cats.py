@@ -2,7 +2,6 @@ from sqlalchemy.orm import Session
 
 from src.shemas import CatModel, CatVactinatedModel
 from src.database.models import Cat
-from . import owners as reposiroy_owners
 
 
 async def get_cats(limit: int, offset: int, db: Session):
@@ -16,9 +15,6 @@ async def get_cat_by_id(cat_id: int, db: Session):
 
 
 async def create(body: CatModel, db: Session):
-    owner = await reposiroy_owners.get_owner_by_id(body.owner_id, db)
-    if not owner:
-        return None
     cat = Cat(**body.model_dump())
     db.add(cat)
     db.commit()
@@ -29,7 +25,12 @@ async def create(body: CatModel, db: Session):
 async def update(cat_id: int, body: CatModel, db: Session):
     cat = await get_cat_by_id(cat_id, db)
     if cat:
-        cat.email = body.email
+        cat.nickname = body.nickname
+        cat.age = body.age
+        cat.description = body.description
+        cat.vaccinated = body.vaccinated
+        cat.nickname = body.nickname
+        cat.owner_id = body.owner_id
         db.commit()
     return cat
 
@@ -39,4 +40,12 @@ async def delete(cat_id: int, db: Session):
     if cat:
         db.delete(cat)
         db.commit()
+    return cat
+
+async def set_vactinated(cat_id: int, body: CatVactinatedModel, db: Session):
+    cat = await get_cat_by_id(cat_id, db)
+    if cat:
+        if cat.vaccinated != body.vaccinated:
+            cat.vaccinated = body.vaccinated
+            db.commit()
     return cat
