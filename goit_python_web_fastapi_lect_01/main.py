@@ -2,15 +2,27 @@
 
 import time
 from fastapi import FastAPI, Path, Query, Depends, HTTPException, Request, status
-from pydantic import BaseModel
+from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
+
+
 from sqlalchemy import text
 from sqlalchemy.orm import Session
+
 
 from src.database.db import get_db
 from src.routes import cats, owners
 
 
 app = FastAPI()
+
+
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
+templates = Jinja2Templates(directory="templates")
+
+
 
 @app.middleware("http")
 async def custom_middleware(request: Request, call_next):
@@ -20,9 +32,13 @@ async def custom_middleware(request: Request, call_next):
     response.headers['X-PERF'] = str(duration)
     return response
 
-@app.get("/")
-async def main():
-    return {"message": "Hello World"}
+# @app.get("/")
+# async def main():
+#     return {"message": "Hello World"}
+
+@app.get("/", response_class=HTMLResponse)
+async def main(request: Request):
+    return templates.TemplateResponse("index.html", {"request": request, "tilte": "Cats APP"}) 
 
 
 @app.get("/api/healthchecker")
