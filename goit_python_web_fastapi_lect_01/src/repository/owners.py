@@ -19,7 +19,7 @@ async def get_owner_by_email(email: str, db: Session):
     return owner
 
 
-async def create_owner(body: OwnerModel, db: Session):
+async def create(body: OwnerModel, db: Session):
     owner = Owner(**body.model_dump())
     db.add(owner)
     db.commit()
@@ -27,7 +27,7 @@ async def create_owner(body: OwnerModel, db: Session):
     return owner
 
 
-async def update_owner(owner_id: int, body: OwnerModel, db: Session):
+async def update(owner_id: int, body: OwnerModel, db: Session):
     owner = await get_owner_by_id(owner_id, db)
     if owner:
         owner.email = body.email
@@ -35,7 +35,7 @@ async def update_owner(owner_id: int, body: OwnerModel, db: Session):
     return owner
 
 
-async def delete_owner(owner_id: int, db: Session):
+async def delete(owner_id: int, db: Session):
     owner = await get_owner_by_id(owner_id, db)
     if owner:
         db.delete(owner)

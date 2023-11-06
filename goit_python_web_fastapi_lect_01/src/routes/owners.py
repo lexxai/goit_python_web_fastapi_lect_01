@@ -34,7 +34,7 @@ async def create_owner(body: OwnerModel, db: Session = Depends(get_db)):
             status_code=status.HTTP_409_CONFLICT, detail=f"Email is exist!"
         )
     try:
-        owner = await repository_owners.create_owner(body, db)
+        owner = await repository_owners.create(body, db)
     except IntegrityError as err:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail=f"Error: {err}"
@@ -46,7 +46,7 @@ async def create_owner(body: OwnerModel, db: Session = Depends(get_db)):
 async def update_owner(
     body: OwnerModel, owner_id: int = Path(ge=1), db: Session = Depends(get_db)
 ):
-    owner = await repository_owners.update_owner(owner_id, body, db)
+    owner = await repository_owners.update(owner_id, body, db)
     if owner is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found")
     return owner
@@ -54,7 +54,7 @@ async def update_owner(
 
 @router.delete("/{owner_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def remove_owner(owner_id: int = Path(ge=1), db: Session = Depends(get_db)):
-    owner = await repository_owners.delete_owner(owner_id, db)
+    owner = await repository_owners.delete(owner_id, db)
     if owner is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found")
     return None
