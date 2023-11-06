@@ -2,11 +2,12 @@ from typing import List
 
 from fastapi import APIRouter, Path, Depends, HTTPException, status
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import Session
 
 from src.database.db import get_db
 from src.shemas import CatModel, CatResponse, CatVactinatedModel
-from src.database.models import Owner, Cat
-from sqlalchemy.orm import Session
+from src.database.models import Cat
+from src.repository import cats as repository_cats
 
 """
 CATS
@@ -17,7 +18,7 @@ router = APIRouter(prefix="/cats", tags=["cats"])
 
 @router.get("", response_model=List[CatResponse])
 async def get_cats(limit: int = 10, offset: int = 0, db: Session = Depends(get_db)):
-    cats = db.query(Cat).limit(limit).offset(offset).all()
+    cats = await repository_cats.get_cats(limit, offset, db)
     return cats
 
 
