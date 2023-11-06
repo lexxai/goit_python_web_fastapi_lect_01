@@ -1,20 +1,44 @@
-from typing import List
-from sqlalchemy.exc import IntegrityError
-from fastapi import FastAPI, Path, Query, Depends, HTTPException, status
-from pydantic import BaseModel
+
+
+import time
+from fastapi import FastAPI, Path, Query, Depends, HTTPException, Request, status
+from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
+
+
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
-from db import get_db
-from shemas import CatVactinatedModel, OwnerModel, OwnerResponse, CatModel, CatResponse
-from models import Owner, Cat
+
+from src.database.db import get_db
+from src.routes import cats, owners
+
 
 app = FastAPI()
 
 
-@app.get("/")
-async def main():
-    return {"message": "Hello World"}
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
+templates = Jinja2Templates(directory="templates")
+
+
+
+@app.middleware("http")
+async def custom_middleware(request: Request, call_next):
+    start_time = time.perf_counter()
+    response = await call_next(request)
+    duration = time.perf_counter() - start_time
+    response.headers['X-PERF'] = str(duration)
+    return response
+
+# @app.get("/")
+# async def main():
+#     return {"message": "Hello World"}
+
+@app.get("/", response_class=HTMLResponse)
+async def main(request: Request):
+    return templates.TemplateResponse("index.html", {"request": request, "tilte": "Cats APP"}) 
 
 
 @app.get("/api/healthchecker")
@@ -35,152 +59,6 @@ def healthchecker(db: Session = Depends(get_db)):
         )
 
 
-@app.get(
-    "/owners",
-    response_model=List[OwnerResponse],
-    name="GET GET OWNERS DESCRIBE .... ",
-    tags=["owners"],
-)
-async def get_owners(db: Session = Depends(get_db)):
-    owners = db.query(Owner).all()
-    return owners
+app.include_router(owners.router, prefix="/api")
+app.include_router(cats.router, prefix="/api")
 
-
-@app.get("/owners/{owner_id}", response_model=OwnerResponse, tags=["owners"])
-async def get_owner(owner_id: int = Path(ge=1), db: Session = Depends(get_db)):
-    owner = db.query(Owner).filter_by(id=owner_id).first()
-    if owner is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found")
-    return owner
-
-
-@app.post("/owners", response_model=OwnerResponse, tags=["owners"])
-async def create_owner(body: OwnerModel, db: Session = Depends(get_db)):
-    owner = db.query(Owner).filter_by(email=body.email).first()
-    if owner:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT, detail=f"Email is exist!"
-        )
-    try:
-        owner = Owner(**body.model_dump())
-        db.add(owner)
-        db.commit()
-        db.refresh(owner)
-    except IntegrityError as err:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail=f"Error: {err}"
-        )
-    return owner
-
-
-@app.put("/owners/{owner_id}", response_model=OwnerResponse, tags=["owners"])
-async def update_owner(
-    body: OwnerModel, owner_id: int = Path(ge=1), db: Session = Depends(get_db)
-):
-    owner = db.query(Owner).filter_by(id=owner_id).first()
-    if owner is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found")
-    owner.email = body.email
-    db.commit()
-    return owner
-
-
-@app.delete(
-    "/owners/{owner_id}", status_code=status.HTTP_204_NO_CONTENT, tags=["owners"]
-)
-async def remove_owner(owner_id: int = Path(ge=1), db: Session = Depends(get_db)):
-    owner = db.query(Owner).filter_by(id=owner_id).first()
-    if owner is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found")
-    db.delete(owner)
-    db.commit()
-    return None
-
-
-"""
-CATS
-"""
-
-
-@app.get(
-    "/cats",
-    response_model=List[CatResponse],
-    tags=["cats"],
-)
-async def get_cats(limit: int = 10, offset: int = 0, db: Session = Depends(get_db)):
-    cats = db.query(Cat).limit(limit).offset(offset).all()
-    return cats
-
-
-@app.get("/cats/{cat_id}", response_model=CatResponse, tags=["cats"])
-async def get_cat(cat_id: int = Path(ge=1), db: Session = Depends(get_db)):
-    cat = db.query(Cat).filter_by(id=cat_id).first()
-    if cat is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found")
-    return cat
-
-
-@app.post("/cats", response_model=CatResponse, tags=["cats"])
-async def create_cat(body: CatModel, db: Session = Depends(get_db)):
-    owner = db.query(Owner).filter_by(id=body.owner_id).first()
-    if owner is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail=f"Owner not exist!"
-        )
-    try:
-        cat = Cat(**body.model_dump())
-        db.add(cat)
-        db.commit()
-        db.refresh(cat)
-    except IntegrityError as err:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail=f"Error: {err}"
-        )
-    return cat
-
-
-@app.put("/cats/{cat_id}", response_model=CatResponse, tags=["cats"])
-async def update_cat(
-    body: CatModel, cat_id: int = Path(ge=1), db: Session = Depends(get_db)
-):
-    cat = db.query(Cat).filter_by(id=cat_id).first()
-    if cat is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found")
-    owner = db.query(Owner).filter_by(id=body.owner_id).first()
-    if owner is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail=f"Owner not exist!"
-        )
-    cat.nickname = body.nickname
-    cat.age = body.age
-    cat.description = body.description
-    cat.vaccinated = body.vaccinated
-    cat.nickname = body.nickname
-    cat.owner_id = body.owner_id 
-    db.commit()
-    return cat
-
-
-@app.patch("/cats/{cat_id}/vactinated", response_model=CatResponse, tags=["cats"])
-async def vactinated_cat(
-    body: CatVactinatedModel, cat_id: int = Path(ge=1), db: Session = Depends(get_db)
-):
-    cat = db.query(Cat).filter_by(id=cat_id).first()
-    if cat is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found")
-    if cat.vaccinated != body.vaccinated:
-        cat.vaccinated = body.vaccinated
-        db.commit()
-        return cat
-    else:
-        raise HTTPException(status_code=status.HTTP_304_NOT_MODIFIED, detail="")
-
-
-@app.delete("/cats/{cat_id}", status_code=status.HTTP_204_NO_CONTENT, tags=["cats"])
-async def remove_cat(cat_id: int = Path(ge=1), db: Session = Depends(get_db)):
-    cat = db.query(Cat).filter_by(id=cat_id).first()
-    if cat is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found")
-    db.delete(cat)
-    db.commit()
-    return None

@@ -7,5 +7,6 @@ __pycache__
 
 
 *.db
-.env
 goit_python_web_fastapi_lect_01/src/conf/config.ini
+.*
+

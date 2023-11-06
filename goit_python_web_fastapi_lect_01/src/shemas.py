@@ -1,3 +1,4 @@
+from datetime import datetime
 from pydantic import BaseModel, Field, EmailStr
 
 
@@ -9,6 +10,8 @@ class OwnerModel(BaseModel):
 class OwnerResponse(BaseModel):
     id: int = 1
     email: EmailStr
+    created_at: datetime 
+    updated_at: datetime 
 
     class Config:
         from_attributes = True
