@@ -1,9 +1,7 @@
 from sqlalchemy.orm import Session
-from fastapi import HTTPException, status
 
 from src.shemas import OwnerModel
 from src.database.models import Owner
-
 
 
 async def get_owners(db: Session):
@@ -43,4 +41,3 @@ async def delete_owner(owner_id: int, db: Session):
         db.delete(owner)
         db.commit()
     return owner
-        

@@ -1,25 +1,21 @@
 from typing import List
 
-from fastapi import Path,  Depends, HTTPException, status, APIRouter
+from fastapi import Path, Depends, HTTPException, status, APIRouter
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from src.database.db import get_db
-from src.shemas import  OwnerModel, OwnerResponse
+from src.shemas import OwnerModel, OwnerResponse
 from src.repository import owners as repository_owners
 
 
-router = APIRouter(prefix="/owners",  tags=["owners"])
+router = APIRouter(prefix="/owners", tags=["owners"])
 
 
-@router.get(
-    "",
-    response_model=List[OwnerResponse]
-)
+@router.get("", response_model=List[OwnerResponse])
 async def get_owners(db: Session = Depends(get_db)):
     owners = await repository_owners.get_owners(db)
     return owners
-
 
 
 @router.get("/{owner_id}", response_model=OwnerResponse)
@@ -56,9 +52,7 @@ async def update_owner(
     return owner
 
 
-@router.delete(
-    "/{owner_id}", status_code=status.HTTP_204_NO_CONTENT
-)
+@router.delete("/{owner_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def remove_owner(owner_id: int = Path(ge=1), db: Session = Depends(get_db)):
     owner = await repository_owners.delete_owner(owner_id, db)
     if owner is None:
