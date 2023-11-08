@@ -3,7 +3,7 @@ from sqlalchemy.orm import relationship, declarative_base
 
 Base = declarative_base()
 
-class Owner(Base):
+class  Owner(Base):
     __tablename__ = "owners"
 
     id = Column(Integer, primary_key=True, index=True)
@@ -26,13 +26,9 @@ class Cat(Base):
     owner = relationship("Owner", backref="cats")
 
 
-@event.listens_for(Cat, "before_insert")
-def updated_vacinated(mapper, conn, target):
-    if target.nickname == "Mur":
-        target.vaccinated = True
         
-
+@event.listens_for(Cat, "before_insert")
 @event.listens_for(Cat, "before_update")
-def updated_vacinated(mapper, conn, target):
+def updated_vacinated_bu(mapper, conn, target):
     if target.nickname == "Mur":
         target.vaccinated = True

@@ -20,7 +20,10 @@ async def get_owners(db: Session = Depends(get_db)):
 
 @router.get("/{owner_id}", response_model=OwnerResponse)
 async def get_owner(owner_id: int = Path(ge=1), db: Session = Depends(get_db)):
-    owner = await repository_owners.get_owner_by_id(owner_id, db)
+    try:
+        owner = await repository_owners.get_owner_by_id(owner_id, db)
+    except Exception as err:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=err)
     if owner is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found")
     return owner

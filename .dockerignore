@@ -10,5 +10,4 @@ scripts/
 *.zip
 logs/
 !.config/
-database/
 *.pyc
