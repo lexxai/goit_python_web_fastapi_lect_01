@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+from os import environ
 import pathlib
 import sys
 from typing import Optional
@@ -34,7 +35,7 @@ assert SECRET_KEY, "MISSED TOKEN SECRET_KEY"
 
 ALGORITHM = "HS512"
 
-token_scheme = HTTPBearer(tokenUrl="/login")
+token_scheme = HTTPBearer()
 
 
 # define a function to generate a new access token
@@ -49,23 +50,24 @@ async def create_access_token(data: dict, expires_delta: Optional[float] = None)
     return encoded_jwt
 
 
-async def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
+async def get_current_user(token: HTTPAuthorizationCredentials = Depends(token_scheme), db: Session = Depends(get_db)):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
         headers={"WWW-Authenticate": "Bearer"},
     )
-
+    if token.scheme != "Bearer":
+        raise credentials_exception
     try:
         # Decode JWT
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        email = payload["sub"]
+        payload = jwt.decode(token.credentials, SECRET_KEY, algorithms=[ALGORITHM])
+        email = payload.get("sub")
         if email is None:
             raise credentials_exception
     except JWTError as e:
         raise credentials_exception
 
-    user: User = db.query(User).filter(User.email == email).first()
+    user: User = db.query(User).filter_by(email=email).first()
     if user is None:
         raise credentials_exception
     return user
