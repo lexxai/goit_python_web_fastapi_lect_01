@@ -2,6 +2,13 @@ from datetime import datetime
 from pydantic import BaseModel, Field, EmailStr
 
 
+
+class UserModel(BaseModel):
+    username: str
+    password: str
+
+    
+
 class OwnerModel(BaseModel):
     email: EmailStr
     # email: str = Field(default="email@examole.com", pattern=r'^\w+@\w+\.\w+$')
@@ -39,3 +46,4 @@ class CatResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
