@@ -1,11 +1,15 @@
 from datetime import datetime
+from typing import Optional
 from pydantic import BaseModel, Field, EmailStr
 
 
 class UserModel(BaseModel):
     username: str
     password: str
-
+    # grant_type: Optional[str] = None
+    # scope: Optional[str] = None
+    # client_id: Optional[str] = None
+    # client_secret: Optional[str] = None
 
 class NewUserResponse(BaseModel):
     username: str

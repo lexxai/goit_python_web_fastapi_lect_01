@@ -2,7 +2,11 @@ from sqlalchemy.orm import Session
 
 from src.shemas import UserModel
 from src.database.models import User
-from src.auth.authSimple import Hash, create_access_token
+from src.conf.auth import AUTH_LIB
+if AUTH_LIB == "Simple":
+    from src.auth.authSimple import Hash, create_access_token, get_current_user, auth_response_model
+else:
+    from src.auth.authOauth2 import Hash, create_access_token, get_current_user, auth_response_model
 
 hash_handler = Hash()
 

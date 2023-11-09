@@ -14,10 +14,13 @@ from starlette import status
 try:
     from src.database.db import get_db
     from src.database.models import User
+    from src.shemas import UserModel
 except ImportError:
     sys.path.append(str(pathlib.Path(__file__).resolve().parent.parent))
     from database.db import get_db
     from database.models import User
+    from shemas import UserModel
+
 
 
 class Hash:
@@ -36,6 +39,9 @@ assert SECRET_KEY, "MISSED TOKEN SECRET_KEY"
 ALGORITHM = "HS512"
 
 token_scheme = HTTPBearer()
+
+
+auth_response_model = UserModel
 
 
 # define a function to generate a new access token
@@ -71,3 +77,7 @@ async def get_current_user(token: HTTPAuthorizationCredentials = Depends(token_s
     if user is None:
         raise credentials_exception
     return user
+
+
+
+print("Auth Simple Bearer Lib")

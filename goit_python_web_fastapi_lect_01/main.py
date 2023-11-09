@@ -14,9 +14,7 @@ from src.database.db import get_db
 from src.routes import cats, owners, auth
 
 
-
 app = FastAPI()
-
 
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -33,9 +31,6 @@ async def custom_middleware(request: Request, call_next):
     duration = time.perf_counter() - start_time
     response.headers["X-PERF"] = str(duration)
     return response
-
-
-
 
 
 @app.get("/", response_class=HTMLResponse)

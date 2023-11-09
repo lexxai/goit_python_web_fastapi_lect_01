@@ -7,13 +7,15 @@ from typing import Optional
 
 from fastapi import Depends, HTTPException
 from passlib.context import CryptContext
-from fastapi.security import OAuth2PasswordBearer #Bearer .....
+from fastapi.security import OAuth2PasswordBearer  # Bearer .....
+from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from jose import JWTError, jwt
 from starlette import status
+
 try:
-    from ..database.db import get_db
-    from ..database.models import User
+    from src.database.db import get_db
+    from src.database.models import User
 except ImportError:
     sys.path.append(str(pathlib.Path(__file__).resolve().parent.parent))
     from database.db import get_db
@@ -29,12 +31,15 @@ class Hash:
     def get_password_hash(self, password: str):
         return self.pwd_context.hash(password)
 
+
 SECRET_KEY = environ.get("TOKEN_SECRET_KEY")
 assert SECRET_KEY, "MISSED TOKEN SECRET_KEY"
 
 ALGORITHM = "HS512"
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/login")
+
+auth_response_model = OAuth2PasswordRequestForm
 
 
 # define a function to generate a new access token
@@ -49,7 +54,9 @@ async def create_access_token(data: dict, expires_delta: Optional[float] = None)
     return encoded_jwt
 
 
-async def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
+async def get_current_user(
+    token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)
+):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
@@ -69,3 +76,6 @@ async def get_current_user(token: str = Depends(oauth2_scheme), db: Session = De
     if user is None:
         raise credentials_exception
     return user
+
+
+print("Auth OAuth2 Lib")
