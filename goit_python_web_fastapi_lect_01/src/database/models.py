@@ -1,7 +1,26 @@
-from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String, func, event
+from sqlalchemy import (
+    Boolean,
+    Column,
+    DateTime,
+    ForeignKey,
+    Integer,
+    String,
+    func,
+    event,
+)
 from sqlalchemy.orm import relationship, declarative_base
 
 Base = declarative_base()
+
+
+class User(Base):
+    __tablename__ = "users"
+
+    id = Column(Integer, primary_key=True)
+    email = Column(String(150), nullable=False, unique=True)
+    password = Column(String(255), nullable=False)
+    refresh_token: Column|str|None = Column(String(255), nullable=True)
+
 
 class Owner(Base):
     __tablename__ = "owners"
@@ -27,12 +46,7 @@ class Cat(Base):
 
 
 @event.listens_for(Cat, "before_insert")
-def updated_vacinated(mapper, conn, target):
-    if target.nickname == "Mur":
-        target.vaccinated = True
-        
-
 @event.listens_for(Cat, "before_update")
-def updated_vacinated(mapper, conn, target):
+def updated_vacinated_bu(mapper, conn, target):
     if target.nickname == "Mur":
         target.vaccinated = True

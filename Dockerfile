@@ -14,7 +14,7 @@ WORKDIR $APP_HOME
 COPY . .
 # COPY .env .env
 COPY run.sh run.sh 
-COPY notes/ notes/
+COPY goit_python_web_fastapi_lect_01/ goit_python_web_fastapi_lect_01/
 COPY requirements.txt requirements.txt
 
 # Встановимо залежності всередині контейнера
