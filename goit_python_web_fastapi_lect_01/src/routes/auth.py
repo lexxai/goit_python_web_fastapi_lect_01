@@ -38,7 +38,7 @@ async def signup(body: HTTPBasicCredentials, db: Session = Depends(get_db)):
 
 # Annotated[OAuth2PasswordRequestForm, Depends()]
 # auth_response_model = Depends()
-@router.post("/login", response_model=AccessTokenResponse)
+@router.post("/login", response_model=AccessTokenResponse, response_model_exclude_unset=True)
 async def login(
     body: Annotated[authLib.auth_response_model, Depends()],
     db: Session = Depends(get_db),
@@ -53,7 +53,9 @@ async def login(
         )
     refresh_token = token.get("refresh_token")
     if refresh_token:
-        await repository_auth.update_refresh_token(username=body.username, refresh_token=refresh_token, db=db)
+        await repository_auth.update_refresh_token(
+            username=body.username, refresh_token=refresh_token, db=db
+        )
     return token
 
 
