@@ -36,6 +36,7 @@ POSTGRES_HOST=pg,localhost
 POSTGRES_PORT=5432
 POSTGRES_DB=fastapi
 TOKEN_SECRET_KEY="some secret"
+AUTH_LIB=OAuth2
 ```
 
 ### RUN
