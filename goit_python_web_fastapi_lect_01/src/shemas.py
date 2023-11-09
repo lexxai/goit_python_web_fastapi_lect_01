@@ -1,15 +1,18 @@
 from datetime import datetime
-from typing import Optional
+from typing import Any, Optional, Annotated
+from fastapi import Form
+
 from pydantic import BaseModel, Field, EmailStr
 
 
 class UserModel(BaseModel):
     username: str
     password: str
-    # grant_type: Optional[str] = None
+    # grant_type: Optional[Any] = None
     # scope: Optional[str] = None
-    # client_id: Optional[str] = None
-    # client_secret: Optional[str] = None
+    # client_id: Optional[Any] = None
+    # client_secret: Optional[Any] = None
+
 
 class NewUserResponse(BaseModel):
     username: str
