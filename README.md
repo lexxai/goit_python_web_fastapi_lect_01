@@ -26,6 +26,17 @@
 - get_token/login by oauth2 form with refresh:
 ![auth-02](doc/auth-08.png)
 
+- token refresh saved to Database:
+![auth-02](doc/auth-09.png)
+
+- decoded refresh token:
+![auth-02](doc/auth-10.png)
+
+- token refresh by refresh_token:
+![auth-02](doc/auth-11.png)
+
+- decoded new refresh token:
+![auth-02](doc/auth-12.png)
 
 
 
