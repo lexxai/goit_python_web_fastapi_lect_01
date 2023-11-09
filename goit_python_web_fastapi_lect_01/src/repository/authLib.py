@@ -5,6 +5,8 @@ from src.database.models import User
 from src.conf.auth import AUTH_LIB
 if AUTH_LIB == "Simple":
     from src.auth.authSimple import Hash, create_access_token, get_current_user, auth_response_model
+if AUTH_LIB == "OAuth2REfresh":
+    from src.auth.authOauth2Refresh import Hash, create_access_token, get_current_user, get_email_form_refresh_token, auth_response_model
 else:
     from src.auth.authOauth2 import Hash, create_access_token, get_current_user, auth_response_model
 
@@ -45,3 +47,5 @@ async def login(username: str, password: str, db: Session):
     # Generate JWT
     access_token = await create_access_token(data={"sub": user.email})
     return {"access_token": access_token, "token_type": "bearer"}
+
+
