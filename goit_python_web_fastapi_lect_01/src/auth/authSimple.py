@@ -12,8 +12,8 @@ from jose import JWTError, jwt
 from starlette import status
 
 try:
-    from ..database.db import get_db
-    from ..database.models import User
+    from src.database.db import get_db
+    from src.database.models import User
 except ImportError:
     sys.path.append(str(pathlib.Path(__file__).resolve().parent.parent))
     from database.db import get_db
