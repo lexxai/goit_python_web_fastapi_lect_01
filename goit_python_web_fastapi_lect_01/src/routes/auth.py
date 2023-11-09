@@ -46,12 +46,14 @@ async def login(
     token = await repository_auth.login(
         username=body.username, password=body.password, db=db
     )
-    print(f"login . token=")
     if token is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid credentianal",
         )
+    refresh_token = token.get("refresh_token")
+    if refresh_token:
+        await repository_auth.update_refresh_token(username=body.username, refresh_token=refresh_token, db=db)
     return token
 
 

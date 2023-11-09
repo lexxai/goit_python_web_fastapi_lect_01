@@ -52,3 +52,12 @@ async def login(username: str, password: str, db: Session):
     if refresh_token:
         token.update({"refresh_token": refresh_token})
     return token
+
+
+async def update_refresh_token(username: str, refresh_token: str, db: Session):
+        user = await get_user_by_name(username=username, db=db)
+        if user is None:
+            return None
+        user.refresh_token=refresh_token
+        db.commit()
+        return refresh_token
