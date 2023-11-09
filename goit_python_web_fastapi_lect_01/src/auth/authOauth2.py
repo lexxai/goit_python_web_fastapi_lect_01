@@ -78,4 +78,15 @@ async def get_current_user(
     return user
 
 
+# EMPTY INTERFACE
+async def get_email_form_refresh_token(refresh_token: str) -> str | None:
+    return None
+
+
+async def create_refresh_token(
+    data: dict, expires_delta: Optional[float] = None
+) -> str | None:
+    return None
+
+
 print("Auth OAuth2 Lib")

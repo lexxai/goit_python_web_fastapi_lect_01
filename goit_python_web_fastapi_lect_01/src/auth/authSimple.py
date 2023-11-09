@@ -6,7 +6,7 @@ from typing import Optional
 
 from fastapi import Depends, HTTPException
 from passlib.context import CryptContext
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials # Bearer token
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials  # Bearer token
 from sqlalchemy.orm import Session
 from jose import JWTError, jwt
 from starlette import status
@@ -20,7 +20,6 @@ except ImportError:
     from database.db import get_db
     from database.models import User
     from shemas import UserModel
-
 
 
 class Hash:
@@ -56,7 +55,10 @@ async def create_access_token(data: dict, expires_delta: Optional[float] = None)
     return encoded_jwt
 
 
-async def get_current_user(token: HTTPAuthorizationCredentials = Depends(token_scheme), db: Session = Depends(get_db)):
+async def get_current_user(
+    token: HTTPAuthorizationCredentials = Depends(token_scheme),
+    db: Session = Depends(get_db),
+):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
@@ -78,6 +80,16 @@ async def get_current_user(token: HTTPAuthorizationCredentials = Depends(token_s
         raise credentials_exception
     return user
 
+
+# EMPTY INTERFACE
+async def get_email_form_refresh_token(refresh_token: str) -> str | None:
+    return None
+
+
+async def create_refresh_token(
+    data: dict, expires_delta: Optional[float] = None
+) -> str | None:
+    return None
 
 
 print("Auth Simple Bearer Lib")

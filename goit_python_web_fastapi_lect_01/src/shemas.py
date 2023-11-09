@@ -21,6 +21,7 @@ class NewUserResponse(BaseModel):
 class AccessTokenResponse(BaseModel):
     access_token: str
     token_type: str = "bearer"
+    refresh_token: Optional[str] = None
 
 
 class OwnerModel(BaseModel):

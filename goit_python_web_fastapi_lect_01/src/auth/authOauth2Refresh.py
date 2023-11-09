@@ -1,5 +1,7 @@
 from datetime import datetime, timedelta
 from os import environ
+import pathlib
+import sys
 from typing import Optional
 
 from fastapi import Depends, HTTPException
@@ -9,7 +11,13 @@ from sqlalchemy.orm import Session
 from jose import JWTError, jwt
 from starlette import status
 
-from db import get_db, User
+try:
+    from src.database.db import get_db
+    from src.database.models import User
+except ImportError:
+    sys.path.append(str(pathlib.Path(__file__).resolve().parent.parent))
+    from database.db import get_db
+    from database.models import User
 
 
 class Hash:
@@ -90,3 +98,6 @@ async def get_current_user(token: str = Depends(oauth2_scheme), db: Session = De
     if user is None:
         raise credentials_exception
     return user
+
+
+print("Auth OAuth2 Refresh Lib")
