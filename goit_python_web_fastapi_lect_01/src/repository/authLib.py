@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 
-from src.shemas import UserModel
+from src.shemas.shemas import UserModel
 from src.database.models import User
 from src.conf.auth import AUTH_LIB
 

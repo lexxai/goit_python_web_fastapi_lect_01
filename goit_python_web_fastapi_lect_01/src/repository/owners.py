@@ -1,7 +1,7 @@
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 
-from src.shemas import OwnerModel
+from src.shemas.shemas import OwnerModel
 from src.database.models import Owner
 
 

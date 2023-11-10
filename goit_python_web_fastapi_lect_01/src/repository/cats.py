@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 
-from src.shemas import CatModel, CatVactinatedModel
+from src.shemas.shemas import CatModel, CatVactinatedModel
 from src.database.models import Cat
 
 

@@ -14,7 +14,7 @@ from starlette import status
 try:
     from src.database.db import get_db
     from src.database.models import User
-    from src.shemas import UserModel
+    from src.shemas.shemas import UserModel
 except ImportError:
     sys.path.append(str(pathlib.Path(__file__).resolve().parent.parent))
     from database.db import get_db

@@ -4,7 +4,7 @@ from fastapi import APIRouter, Path, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from src.database.db import get_db
-from src.shemas import CatModel, CatVactinatedModel, CatResponse
+from src.shemas.shemas import CatModel, CatVactinatedModel, CatResponse
 from src.repository import cats as repository_cats
 from src.repository import owners as repository_owners
 

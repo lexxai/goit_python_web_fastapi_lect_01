@@ -11,9 +11,9 @@ from sqlalchemy.orm import Session
 from src.database.db import get_db
 from src.database.models import User
 
-from src.shemas import AccessTokenResponse, NewUserResponse
+from src.shemas.shemas import AccessTokenResponse, NewUserResponse
 from src.repository import authLib as repository_auth
-from src.shemas import UserModel
+from src.shemas.shemas import UserModel
 
 from src.repository.authLib import authLib, AUTH_LIB
 
