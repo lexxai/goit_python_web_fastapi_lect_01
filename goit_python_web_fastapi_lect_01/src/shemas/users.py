@@ -5,20 +5,15 @@ from fastapi import Form
 from pydantic import BaseModel, Field, EmailStr
 
 
-class NewUserResponse(BaseModel):
-    username: str
-
-
 class AccessTokenRefreshResponse(BaseModel):
     access_token: str
     token_type: str = "bearer"
-    refresh_token: Optional[str] = None
+    refresh_token: str
 
 
 class AccessTokenResponse(BaseModel):
     access_token: str
     token_type: str = "bearer"
-
 
 
 class UserModel(BaseModel):
@@ -29,3 +24,10 @@ class UserModel(BaseModel):
     # client_id: Optional[Any] = None
     # client_secret: Optional[Any] = None
 
+
+class NewUserResponse(BaseModel):
+    username: str
+
+
+class UserResponse(BaseModel):
+    user: UserModel
