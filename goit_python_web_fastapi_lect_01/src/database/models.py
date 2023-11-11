@@ -1,4 +1,5 @@
 import enum
+from typing import Union
 
 from sqlalchemy import (
     Boolean,
@@ -9,7 +10,7 @@ from sqlalchemy import (
     String,
     func,
     event,
-    Enum
+    Enum,
 )
 from sqlalchemy.orm import relationship, declarative_base
 
@@ -17,9 +18,9 @@ Base = declarative_base()
 
 
 class Role(enum.Enum):
-     admin: str = "admin"
-     moderator: str = "moderator"
-     user: str = "user"
+    admin: str = "admin"  # type: ignore
+    moderator: str = "moderator"  # type: ignore
+    user: str = "user"  # type: ignore
 
 
 class User(Base):
@@ -29,8 +30,12 @@ class User(Base):
     username = Column(String(150), nullable=False)
     email = Column(String(150), nullable=False, unique=True)
     password = Column(String(255), nullable=False)
-    refresh_token = Column(String(255), nullable=True)
+    # refresh_token: str | Column[str] | None = Column(String(255), nullable=True)
+    refresh_token: Union[str, Column[str], None] = Column(String(255), nullable=True)
+
     avatar = Column(String(255), nullable=True)
+    role = Column("roles", Enum(Role), default=Role.user)
+
 
 class Owner(Base):
     __tablename__ = "owners"
