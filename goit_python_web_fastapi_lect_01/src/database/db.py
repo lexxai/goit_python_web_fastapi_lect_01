@@ -20,7 +20,7 @@ if not domain:
     ENV_FILE = Path(__file__).resolve().parent.parent.parent.parent.joinpath(".env")
     load_dotenv(ENV_FILE)
     domain = environ.get("POSTGRES_HOST")
-    print(f"{ENV_FILE=} {domain=}")
+    # print(f"{ENV_FILE=} {domain=}")
 
     username = environ.get("POSTGRES_USERNAME")
     password = environ.get("POSTGRES_PASSWORD")

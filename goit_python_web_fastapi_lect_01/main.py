@@ -58,10 +58,10 @@ def healthchecker(db: Session = Depends(get_db)):
         )
 
 
-
+print(f"{AUTH_LIB=}")
 if AUTH_LIB == "Simple":
     app.include_router(auth_simple.router, prefix="")
-if AUTH_LIB == "OAuth2REfresh":
+elif AUTH_LIB == "OAuth2REfresh":
     app.include_router(auth_oauth2refresh.router, prefix="")
 else:
     app.include_router(auth_oauth2.router, prefix="")
