@@ -10,7 +10,8 @@ from sqlalchemy.orm import Session
 
 
 from src.database.db import get_db
-from src.routes import cats, owners, auth
+from src.routes import cats, owners, auth_simple, auth_oauth2, auth_oauth2refresh
+from src.conf.auth import AUTH_LIB
 
 
 app = FastAPI()
@@ -57,7 +58,16 @@ def healthchecker(db: Session = Depends(get_db)):
         )
 
 
-app.include_router(auth.router, prefix="")
+
+if AUTH_LIB == "Simple":
+    app.include_router(auth_simple.router, prefix="")
+if AUTH_LIB == "OAuth2REfresh":
+    app.include_router(auth_oauth2refresh.router, prefix="")
+else:
+    app.include_router(auth_oauth2.router, prefix="")
+
+
+
 app.include_router(owners.router, prefix="/api")
 app.include_router(cats.router, prefix="/api")
 

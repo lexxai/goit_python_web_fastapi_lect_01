@@ -5,25 +5,6 @@ from fastapi import Form
 from pydantic import BaseModel, Field, EmailStr
 
 
-class UserModel(BaseModel):
-    username: str
-    password: str
-    # grant_type: Optional[Any] = None
-    # scope: Optional[str] = None
-    # client_id: Optional[Any] = None
-    # client_secret: Optional[Any] = None
-
-
-class NewUserResponse(BaseModel):
-    username: str
-
-
-class AccessTokenResponse(BaseModel):
-    access_token: str
-    token_type: str = "bearer"
-    refresh_token: Optional[str] = None
-
-
 class OwnerModel(BaseModel):
     email: EmailStr
     # email: str = Field(default="email@examole.com", pattern=r'^\w+@\w+\.\w+$')
