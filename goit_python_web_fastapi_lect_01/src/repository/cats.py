@@ -25,12 +25,12 @@ async def create(body: CatModel, db: Session):
 async def update(cat_id: int, body: CatModel, db: Session):
     cat = await get_cat_by_id(cat_id, db)
     if cat:
-        cat.nickname = body.nickname        # type: ignore
-        cat.age = body.age                  # type: ignore
-        cat.description = body.description  # type: ignore
-        cat.vaccinated = body.vaccinated    # type: ignore
-        cat.nickname = body.nickname        # type: ignore
-        cat.owner_id = body.owner_id        # type: ignore
+        cat.nickname = body.nickname        
+        cat.age = body.age                  
+        cat.description = body.description  
+        cat.vaccinated = body.vaccinated    
+        cat.nickname = body.nickname        
+        cat.owner_id = body.owner_id        
         db.commit()
     return cat
 

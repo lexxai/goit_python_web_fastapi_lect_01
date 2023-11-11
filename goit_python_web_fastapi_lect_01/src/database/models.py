@@ -1,5 +1,4 @@
 import enum
-from typing import Union
 
 from sqlalchemy import (
     Boolean,
@@ -27,14 +26,12 @@ class User(Base):
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True)
-    username = Column(String(150), nullable=False)
-    email = Column(String(150), nullable=False, unique=True)
-    password = Column(String(255), nullable=False)
-    # refresh_token: str | Column[str] | None = Column(String(255), nullable=True)
-    refresh_token: Union[str, Column[str], None] = Column(String(255), nullable=True)
-
-    avatar = Column(String(255), nullable=True)
-    role = Column("roles", Enum(Role), default=Role.user)
+    username: str | Column[str] = Column(String(150), nullable=False)
+    email: str | Column[str] = Column(String(150), nullable=False, unique=True)
+    password: str | Column[str] = Column(String(255), nullable=False)
+    refresh_token: str | Column[str] | None = Column(String(255), nullable=True)
+    avatar: str | Column[str] | None = Column(String(255), nullable=True)
+    role: Enum | Column[Enum] = Column("roles", Enum(Role), default=Role.user)
 
 
 class Owner(Base):
@@ -50,11 +47,13 @@ class Cat(Base):
     __tablename__ = "cats"
 
     id = Column(Integer, primary_key=True, index=True)
-    nickname = Column(String)
-    age = Column(Integer)
-    description = Column(String)
-    vaccinated = Column(Boolean, default=False)
-    owner_id = Column(Integer, ForeignKey("owners.id"), nullable=True)
+    nickname: str | Column[str] = Column(String)
+    age: int | Column[int] = Column(Integer)
+    description: str | Column[str] = Column(String)
+    vaccinated: bool | Column[bool] = Column(Boolean, default=False)
+    owner_id: int | Column[int] | None = Column(
+        Integer, ForeignKey("owners.id"), nullable=True
+    )
     created_at = Column(DateTime, default=func.now())
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
     owner = relationship("Owner", backref="cats")
