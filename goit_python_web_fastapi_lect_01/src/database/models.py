@@ -1,3 +1,5 @@
+import enum
+
 from sqlalchemy import (
     Boolean,
     Column,
@@ -7,20 +9,28 @@ from sqlalchemy import (
     String,
     func,
     event,
+    Enum
 )
 from sqlalchemy.orm import relationship, declarative_base
 
 Base = declarative_base()
 
 
+class Role(enum.Enum):
+     admin: str = "admin"
+     moderator: str = "moderator"
+     user: str = "user"
+
+
 class User(Base):
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True)
+    username = Column(String(150), nullable=False)
     email = Column(String(150), nullable=False, unique=True)
     password = Column(String(255), nullable=False)
     refresh_token = Column(String(255), nullable=True)
-
+    avatar = Column(String(255), nullable=True)
 
 class Owner(Base):
     __tablename__ = "owners"
