@@ -24,10 +24,6 @@ class UserModel(BaseModel):
     username: str = Field(min_length=6, max_length=150)
     email: EmailStr
     password: str = Field(min_length=6, max_length=32)
-    # grant_type: Optional[Any] = None
-    # scope: Optional[str] = None
-    # client_id: Optional[Any] = None
-    # client_secret: Optional[Any] = None
 
 
 class NewUserResponse(BaseModel):

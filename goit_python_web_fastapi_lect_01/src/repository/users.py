@@ -1,9 +1,10 @@
 from sqlalchemy.orm import Session
+from src.shemas.users import UserModel
 
 from src.database.models import User
 
 
-async def create_user(body, db: Session) -> User | None:
+async def create_user(body: UserModel, db: Session) -> User | None:
     try:
         new_user = User(
             username=body.username,

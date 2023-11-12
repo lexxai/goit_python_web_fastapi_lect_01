@@ -64,7 +64,7 @@ def get_db():
     try:
         yield db
     except SQLAlchemyError as err:
-        print(err)
+        print("SQLAlchemyError:", err)
         db.rollback()
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(err)) 
     finally:

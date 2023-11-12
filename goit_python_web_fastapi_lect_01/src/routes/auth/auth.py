@@ -12,10 +12,11 @@ from sqlalchemy.orm import Session
 from src.database.db import get_db
 from src.database.models import User
 
-from src.shemas.users import AccessTokenResponse, NewUserResponse, UserResponse
+from src.shemas.users import AccessTokenResponse, UserResponse, UserModel
 
 from src.repository.auth import auth as repository_auth
 from src.repository import users as repository_users
+
 
 router = APIRouter(prefix="", tags=["Auth"])
 
@@ -28,7 +29,7 @@ security = HTTPBearer()
     response_model_exclude_none=True,
     status_code=status.HTTP_201_CREATED,
 )
-async def signup(body: HTTPBasicCredentials, db: Session = Depends(get_db)):
+async def signup(body: UserModel, db: Session = Depends(get_db)):
     new_user = await repository_auth.signup(body=body, db=db)
     if new_user is None:
         raise HTTPException(
