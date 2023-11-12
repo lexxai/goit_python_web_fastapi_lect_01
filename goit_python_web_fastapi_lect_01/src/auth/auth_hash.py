@@ -11,10 +11,9 @@ from starlette import status
 
 from src.database.db import get_db
 from src.database.models import User
-from src.auth.auth_hash import AuthHash
 
 
-class Hash:
+class AuthHash:
     pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
     SECRET_KEY: str

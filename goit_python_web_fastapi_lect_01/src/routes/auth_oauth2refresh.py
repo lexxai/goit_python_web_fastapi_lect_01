@@ -72,13 +72,13 @@ async def refresh_token(
 ):
     token: str = credentials.credentials
     email = await authLib.get_email_form_refresh_token(token)
-    user = db.query(User).filter(User.email == email).first()
-    if user.refresh_token != token: # type: ignore
-        user.refresh_token = None   # type: ignore
-        db.commit()
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid refresh token"
-        )
+    user: User | None = db.query(User).filter(User.email == email).first()
+    if user and user.refresh_token != token:  # type: ignore
+            user.refresh_token = None   
+            db.commit()
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid refresh token"
+            )
 
     access_token = await authLib.create_access_token(data={"sub": email})
     refresh_token = await authLib.create_refresh_token(data={"sub": email})
