@@ -40,14 +40,14 @@
 
 
 ## REAUTH BY REFRESH_TOKEN in COOKIES
-define cookie for refresh_token
+Define cookie for refresh_token
 ![auth-cookies](doc/auth-13-cookies.png)
 
-auth with use refresh_token (cookie) sicne access_token is expired and get new access_token, and clint side must save and use it new  new_access_token as next access_token
-![auth-cookies](doc/auth-14-new_a_token.png)
+Auth using a refresh_token (cookie) sicne access_token has expired and get a new access_token, and the client side should save and use its new new_access_token as the next access_token
+![auth show new token](doc/auth-14-new_a_token.png)
 
-next auth with use new access_token as access_token
-![auth-cookies](doc/auth-15-use_new_a_token.png)
+Next auth with use new access_token as access_token
+![auth with new token](doc/auth-15-use_new_a_token.png)
 
 
 
