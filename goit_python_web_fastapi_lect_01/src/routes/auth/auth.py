@@ -26,9 +26,7 @@ security = HTTPBearer()
     "/signup", response_model=UserResponse, response_model_exclude_none=True, status_code=status.HTTP_201_CREATED
 )
 async def signup(body: HTTPBasicCredentials, db: Session = Depends(get_db)):
-    new_user = await repository_auth.signup(
-        username=body.username, password=body.password, db=db
-    )
+    new_user = await repository_auth.signup(body=body, db=db)
     if new_user is None:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT, detail="Account already exists"

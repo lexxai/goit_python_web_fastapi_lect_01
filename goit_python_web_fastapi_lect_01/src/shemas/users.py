@@ -1,9 +1,12 @@
 from datetime import datetime
+from enum import Enum
 from typing import Any, Optional, Annotated
 from fastapi import Form
 
 from pydantic import BaseModel, Field, EmailStr
 from sqlalchemy import Column, String
+
+from src.database.models import Role
 
 
 class AccessTokenRefreshResponse(BaseModel):
@@ -30,12 +33,16 @@ class UserModel(BaseModel):
 class NewUserResponse(BaseModel):
     username: str
 
+class roles(str):
+    ...
+
 
 class UserResponse(BaseModel):
     id: int
     username: str
     email: str
-    avatar: Optional[str|None] = None
+    avatar: str | None
+    # roles: roles | str
 
     class Config:
         from_attributes = True
