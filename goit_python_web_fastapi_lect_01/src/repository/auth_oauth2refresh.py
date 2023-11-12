@@ -19,9 +19,9 @@ hash_handler = Hash()
 
 
 
-async def get_user_by_name(username: str, db: Session):
+async def get_user_by_name(username: str|None, db: Session):
     try:
-        return db.query(User).filter(User.email == username).first()
+        return db.query(User).filter_by(email = username).first()
     except Exception:
         ...
     return None
