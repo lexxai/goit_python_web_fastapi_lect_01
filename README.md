@@ -39,6 +39,17 @@
 ![auth-02](doc/auth-12.png)
 
 
+## REAUTH BY REFRESH_TOKEN in COOKIES
+define cookie for refresh_token
+![auth-cookies](doc/auth-13-cookies.png)
+
+auth with use refresh_token (cookie) sicne access_token is expired and get new access_token, and clint side must save and use it new  new_access_token as next access_token
+![auth-cookies](doc/auth-14-new_a_token.png)
+
+next auth with use new access_token as access_token
+![auth-cookies](doc/auth-15-use_new_a_token.png)
+
+
 
 ## DOCKER
 ### .env

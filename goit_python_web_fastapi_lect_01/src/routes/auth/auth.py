@@ -1,11 +1,12 @@
 from typing import Annotated, List
 
-from fastapi import APIRouter, Path, Depends, HTTPException, Security, status
+from fastapi import APIRouter, Path, Depends, HTTPException, Security, status, Cookie
 from fastapi.security import (
     HTTPAuthorizationCredentials,
     HTTPBasicCredentials,
     HTTPBearer,
 )
+
 from sqlalchemy.orm import Session
 
 from src.database.db import get_db
@@ -59,22 +60,58 @@ async def login(
 
 
 async def get_current_user(
-    token: str = Depends(repository_auth.auth_service.auth_scheme), db: Session = Depends(get_db)
-) -> User | None:
+    access_token: Annotated[str | None, Cookie()] = None,
+    refresh_token: Annotated[str | None, Cookie()] = None,
+    token: str | None = Depends(repository_auth.auth_service.auth_scheme),
+    db: Session = Depends(get_db),
+) -> dict | None:
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
         headers={"WWW-Authenticate": "Bearer"},
     )
-    user = await repository_auth.a_get_current_user(token, db)
+    user = None
+    new_access_token = None
+    print(f"{access_token=}, {refresh_token=}")
+    if not token:
+        token = access_token
+    if token:
+        user = await repository_auth.a_get_current_user(token, db)
+        if not user and refresh_token:
+            result = await refresh_access_token(refresh_token)
+            print(f"refresh_access_token  {result=}")
+            if result:
+                new_access_token = result.get("access_token")
+                email = result.get("email")
+                user = await repository_users.get_user_by_email(str(email), db)
     if user is None:
         raise credentials_exception
-    return user
+    auth_result: dict[str, User | str] = {"user": user}
+    if new_access_token:
+        auth_result.update({"new_access_token": new_access_token})
+
+    return auth_result
 
 
 @router.get("/secret")
 async def read_item(current_user: User = Depends(get_current_user)):
-    return {"message": "secret router", "owner": current_user.email}
+    auth_result = {"email": current_user.get("user").email}
+    if current_user.get("new_access_token"):
+        auth_result.update(
+            {"new_access_token": current_user.get("new_access_token")}
+        )
+    return {"message": "secret router", "owner": auth_result}
+
+
+async def refresh_access_token(refresh_token: str) -> dict[str, str] | None:
+    if refresh_token:
+        email = await repository_auth.auth_service.decode_refresh_token(refresh_token)
+        if email:
+            access_token = await repository_auth.auth_service.create_access_token(
+                data={"sub": email}
+            )
+            return {"access_token": access_token, "email": email}
+    return None
 
 
 @router.get("/refresh_token")
@@ -84,18 +121,22 @@ async def refresh_token(
 ):
     token: str = credentials.credentials
     email = await repository_auth.auth_service.decode_refresh_token(token)
-    user: User | None = await repository_users.get_user_by_email(email,db)
+    user: User | None = await repository_users.get_user_by_email(email, db)
     if user and user.refresh_token != token:  # type: ignore
-            await repository_users.update_user_refresh_token(user,"", db)
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid refresh token"
-            )
+        await repository_users.update_user_refresh_token(user, "", db)
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid refresh token"
+        )
 
-    access_token = await repository_auth.auth_service.create_access_token(data={"sub": email})
-    refresh_token = await repository_auth.auth_service.create_refresh_token(data={"sub": email})
+    access_token = await repository_auth.auth_service.create_access_token(
+        data={"sub": email}
+    )
+    refresh_token = await repository_auth.auth_service.create_refresh_token(
+        data={"sub": email}
+    )
     await repository_users.update_user_refresh_token(user, refresh_token, db)
     return {
         "access_token": access_token,
         "refresh_token": refresh_token,
         "token_type": "bearer",
-        }
+    }
