@@ -23,12 +23,13 @@ security = HTTPBearer()
 
 
 @router.post(
-    "/signup", response_model=UserResponse, response_model_exclude_none=True, status_code=status.HTTP_201_CREATED
+    "/signup",
+    response_model=UserResponse,
+    response_model_exclude_none=True,
+    status_code=status.HTTP_201_CREATED,
 )
 async def signup(body: HTTPBasicCredentials, db: Session = Depends(get_db)):
-    new_user = await repository_auth.signup(
-        username=body.username, password=body.password, db=db
-    )
+    new_user = await repository_auth.signup(body=body, db=db)
     if new_user is None:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT, detail="Account already exists"
@@ -112,9 +113,11 @@ async def get_current_user_dbtoken(
     if token:
         user = await repository_auth.a_get_current_user(token, db)
         if not user and refresh_token:
-            email = await repository_auth.auth_service.decode_refresh_token(refresh_token)
+            email = await repository_auth.auth_service.decode_refresh_token(
+                refresh_token
+            )
             user = await repository_users.get_user_by_email(str(email), db)
-            print(f"refresh_access_token {email=} {user.email} {user.refresh_token}") # type: ignore
+            print(f"refresh_access_token {email=} {user.email} {user.refresh_token}")  # type: ignore
             if refresh_token == user.refresh_token:  # type: ignore
                 result = await refresh_access_token(refresh_token)
                 print(f"refresh_access_token  {result=}")

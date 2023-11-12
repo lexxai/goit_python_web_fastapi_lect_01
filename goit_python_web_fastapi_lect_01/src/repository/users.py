@@ -3,6 +3,21 @@ from sqlalchemy.orm import Session
 from src.database.models import User
 
 
+async def create_user(body, db: Session) -> User | None:
+    try:
+        new_user = User(
+            username=body.username,
+            email=body.username,
+            password=body.password,
+        )
+        db.add(new_user)
+        db.commit()
+        db.refresh(new_user)
+    except Exception:
+        return None
+    return new_user
+
+
 async def get_user_by_email(email: str | None, db: Session) -> User | None:
     if email:
         try:

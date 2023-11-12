@@ -20,23 +20,16 @@ async def a_get_current_user(token: str, db: Session) -> User | None:
     return user
 
 
-async def signup(username: str, password: str, db: Session):
+async def signup(body, db: Session):
     try:
-        user = await repository_users.get_user_by_name(username, db)
+        user = await repository_users.get_user_by_name(body.username, db)
         if user is not None:
             return None
-        new_user = User(
-            username=username,
-            email=username,
-            password=auth_service.get_password_hash(password),
-        )
-        db.add(new_user)
-        db.commit()
-        db.refresh(new_user)
-        return new_user
-    except Exception as err:
-        print("signup err:", err)
-    return None
+        body.password = auth_service.get_password_hash(body.password)
+        new_user = await repository_users.create_user(body, db)
+    except Exception:
+        return None
+    return new_user
 
 
 async def login(username: str, password: str, db: Session):
@@ -54,4 +47,6 @@ async def login(username: str, password: str, db: Session):
 
 
 async def update_refresh_token(username: str, refresh_token: str, db: Session):
-    return await repository_users.update_by_name_refresh_token(username, refresh_token, db)
+    return await repository_users.update_by_name_refresh_token(
+        username, refresh_token, db
+    )
