@@ -30,6 +30,20 @@ class AuthHash:
 
     def get_password_hash(self, password: str):
         return self.pwd_context.hash(password)
+    
+    def encode_jwt(self, to_encode) -> str:
+            return jwt.encode(to_encode, self.SECRET_KEY, algorithm=self.ALGORITHM)
+    
+    def decode_jwt(self, token) -> str | None:
+        try:
+            # Decode JWT
+            payload = jwt.decode(token, self.SECRET_KEY, algorithms=[self.ALGORITHM])
+            if payload["scope"] == "access_token":
+                email = payload["sub"]
+                return email
+        except JWTError as e:
+                return None
+        return None
 
     # define a function to generate a new access token
     async def create_access_token(

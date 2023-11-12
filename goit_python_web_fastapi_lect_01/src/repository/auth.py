@@ -23,28 +23,19 @@ class Auth(AuthHash):
     auth_response_model = OAuth2PasswordRequestForm
 
 
+
+
     async def get_current_user(
         self, token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)
-    ):
+    ) -> User | None:
         credentials_exception = HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Could not validate credentials",
             headers={"WWW-Authenticate": "Bearer"},
         )
-
-        try:
-            # Decode JWT
-            payload = jwt.decode(token, self.SECRET_KEY, algorithms=[self.ALGORITHM])
-            if payload["scope"] == "access_token":
-                email = payload["sub"]
-                if email is None:
-                    raise credentials_exception
-            else:
-                raise credentials_exception
-        except JWTError as e:
+        email = self.decode_jwt(token)
+        if email is None:
             raise credentials_exception
-        
-
         user = await repository_users.get_user_by_email(email, db)
         if user is None:
             raise credentials_exception
