@@ -36,7 +36,7 @@ async def signup(body: HTTPBasicCredentials, db: Session = Depends(get_db)):
 
 # Annotated[OAuth2PasswordRequestForm, Depends()]
 # auth_response_model = Depends()
-@router.post("/login", response_model=AccessTokenResponse, response_model_exclude_unset=True)
+@router.post("/login", response_model=repository_auth.auth_service.token_response_model)
 async def login(
     body: Annotated[repository_auth.auth_service.auth_response_model, Depends()],
     db: Session = Depends(get_db),
@@ -57,8 +57,22 @@ async def login(
     return token
 
 
+async def get_current_user(
+    token: str = Depends(repository_auth.auth_service.auth_scheme), db: Session = Depends(get_db)
+) -> User | None:
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+    user = await repository_auth.a_get_current_user(token, db)
+    if user is None:
+        raise credentials_exception
+    return user
+
+
 @router.get("/secret")
-async def read_item(current_user: User = Depends(repository_auth.auth_service.get_current_user)):
+async def read_item(current_user: User = Depends(get_current_user)):
     return {"message": "secret router", "owner": current_user.email}
 
 

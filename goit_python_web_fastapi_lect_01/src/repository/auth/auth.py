@@ -1,27 +1,27 @@
 from sqlalchemy.orm import Session
-from sqlalchemy import (
-    Boolean,
-    Column,
-    DateTime,
-    ForeignKey,
-    Integer,
-    String,
-    func,
-    event,
-)
+#from fastapi import Depends
 
 from src.database.models import User
-
 from src.services.auth.auth import Auth
 from src.repository import users as repository_users
+#from src.database.db import get_db
+
 
 
 auth_service = Auth()
 
 
+async def a_get_current_user(token: str, db: Session) -> User | None:
+    email = auth_service.decode_jwt(token)
+    if email is None:
+        return None
+    user = await repository_users.get_user_by_email(email, db)
+    return user
+
+
 async def signup(username: str, password: str, db: Session):
     try:
-        user = await repository_users.get_user_by_name(username=username, db=db)
+        user = await repository_users.get_user_by_name(username, db)
         if user:
             return None
         new_user = User(
@@ -37,7 +37,7 @@ async def signup(username: str, password: str, db: Session):
 
 
 async def login(username: str, password: str, db: Session):
-    user = await repository_users.get_user_by_name(username=username, db=db)
+    user = await repository_users.get_user_by_name(username, db)
     if user is None:
         return None
     if not auth_service.verify_password(password, user.password):
@@ -51,7 +51,7 @@ async def login(username: str, password: str, db: Session):
 
 
 async def update_refresh_token(username: str, refresh_token: str, db: Session):
-    user = await repository_users.get_user_by_name(username=username, db=db)
+    user = await repository_users.get_user_by_name(username, db)
     if user is None:
         return None
     user.refresh_token = refresh_token

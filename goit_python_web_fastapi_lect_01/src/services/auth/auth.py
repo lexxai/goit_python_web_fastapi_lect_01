@@ -7,20 +7,23 @@ from sqlalchemy.orm import Session
 from jose import JWTError, jwt
 
 
+
 from src.database.db import get_db
 from src.database.models import User
 from .auth_token import AuthToken
 from src.repository import users as repository_users
+from src.shemas.users import AccessTokenRefreshResponse
 
 
 class Auth(AuthToken):
         
-    oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
+    auth_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
     auth_response_model = OAuth2PasswordRequestForm
+    token_response_model = AccessTokenRefreshResponse
     
     
     async def get_current_user(
-        self, token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)
+        self, token: str = Depends(auth_scheme), db: Session = Depends(get_db)
     ) -> User | None:
         credentials_exception = HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
