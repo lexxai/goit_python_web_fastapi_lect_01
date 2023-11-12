@@ -1,15 +1,11 @@
 from datetime import datetime, timedelta
-from os import environ
-import pathlib
-import sys
 from typing import Optional
 
-from fastapi import Depends, HTTPException
-from passlib.context import CryptContext
+from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from jose import JWTError, jwt
-from starlette import status
+
 
 from src.database.db import get_db
 from src.database.models import User
@@ -21,8 +17,8 @@ class Auth(AuthToken):
         
     oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
     auth_response_model = OAuth2PasswordRequestForm
-
-
+    
+    
     async def get_current_user(
         self, token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)
     ) -> User | None:

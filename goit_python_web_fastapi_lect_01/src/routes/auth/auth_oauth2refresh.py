@@ -14,7 +14,7 @@ from src.database.models import User
 from src.shemas.users import AccessTokenResponse, NewUserResponse
 from src.shemas.users import UserModel
 
-from src.repository import auth_oauth2refresh as repository_auth
+from src.repository.auth import auth_oauth2refresh as repository_auth
 from src.auth import auth_oauth2refresh as authLib
 
 

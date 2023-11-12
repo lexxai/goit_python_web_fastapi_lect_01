@@ -10,7 +10,9 @@ from sqlalchemy.orm import Session
 
 
 from src.database.db import get_db
-from src.routes import cats, owners, auth_simple, auth_oauth2, auth_oauth2refresh
+from src.routes import cats, owners
+from src.routes.auth import auth
+# from src.routes.auth import auth_simple, auth_oauth2, auth_oauth2refresh, 
 from src.conf.auth import AUTH_LIB
 
 
@@ -58,15 +60,15 @@ def healthchecker(db: Session = Depends(get_db)):
         )
 
 
-print(f"{AUTH_LIB=}")
-if AUTH_LIB == "Simple":
-    app.include_router(auth_simple.router, prefix="/api/auth")
-elif AUTH_LIB == "OAuth2REfresh":
-    app.include_router(auth_oauth2refresh.router, prefix="/api/auth")
-else:
-    app.include_router(auth_oauth2.router, prefix="/api/auth")
+# print(f"{AUTH_LIB=}")
+# if AUTH_LIB == "Simple":
+#     app.include_router(auth_simple.router, prefix="/api/auth")
+# elif AUTH_LIB == "OAuth2REfresh":
+#     app.include_router(auth_oauth2refresh.router, prefix="/api/auth")
+# else:
+#     app.include_router(auth_oauth2.router, prefix="/api/auth")
 
-
+app.include_router(auth.router, prefix="/api/auth")
 
 app.include_router(owners.router, prefix="/api")
 app.include_router(cats.router, prefix="/api")
