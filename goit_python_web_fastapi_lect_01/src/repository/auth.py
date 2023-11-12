@@ -67,7 +67,7 @@ class Auth(AuthHash):
         )
         return encoded_refresh_token
 
-    async def get_email_form_refresh_token(self, refresh_token: str):
+    async def decode_refresh_token(self, refresh_token: str):
         try:
             payload = jwt.decode(
                 refresh_token, self.SECRET_KEY, algorithms=[self.ALGORITHM]
@@ -84,5 +84,7 @@ class Auth(AuthHash):
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Could not validate credentials",
             )
+        
+auth_service = Auth()
 
 
