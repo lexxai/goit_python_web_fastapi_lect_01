@@ -49,11 +49,19 @@ Auth using a refresh_token (cookie) sicne access_token has expired and get a new
 Next auth with use new access_token as access_token
 ![auth with new token](doc/auth-15-use_new_a_token.png)
 
-## REAUTH BY REFRESH_TOKEN in DATABSE
-Auth using a refresh_token (cookie) sicne access_token has expired and get a new access_token, and the client side should save and use its new new_access_token as the next access_token
-![auth show new token](doc/auth-14-new_a_token.png)
+Auth using a refresh_token (cookie) and check on saved DB, sicne access_token has expired and get a new access_token, and the client side should save and use its new new_access_token as the next access_token
+![auth show new token](doc/auth-16-chek_token_db.png)
 
+### USE REFRESH_TOKEN in COOKIES + REFRESH_TOKEN IN DB 
 
+Set changed in DB
+![auth show new token](doc/auth-17-token_db-other.png)
+
+Now rigth refresh_token by sign not aceeped, since not same as DB
+![auth show new token](doc/auth-18-token_db-other-deny.png)
+
+After wrong refresh_token used, refresh_token in DB cleared
+![auth show new token](doc/auth-19-token_db-cleared.png)
 
 
 ## DOCKER

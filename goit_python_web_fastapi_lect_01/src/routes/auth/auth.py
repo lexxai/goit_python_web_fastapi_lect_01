@@ -95,6 +95,7 @@ async def get_current_user(
 
 async def get_current_user_dbtoken(
     access_token: Annotated[str | None, Cookie()] = None,
+    refresh_token: Annotated[str | None, Cookie()] = None,
     token: str | None = Depends(repository_auth.auth_service.auth_scheme),
     db: Session = Depends(get_db),
 ) -> dict | None:
@@ -105,21 +106,25 @@ async def get_current_user_dbtoken(
     )
     user = None
     new_access_token = None
+    print(f"{access_token=}, {refresh_token=}")
     if not token:
         token = access_token
     if token:
         user = await repository_auth.a_get_current_user(token, db)
-        if not user:
-            email = await repository_auth.auth_service.decode_refresh_token(token)
+        if not user and refresh_token:
+            email = await repository_auth.auth_service.decode_refresh_token(refresh_token)
             user = await repository_users.get_user_by_email(str(email), db)
-            refresh_token: Any = user.refresh_token  # type: ignore
-            if refresh_token:
+            print(f"refresh_access_token {email=} {user.email} {user.refresh_token}") # type: ignore
+            if refresh_token == user.refresh_token:  # type: ignore
                 result = await refresh_access_token(refresh_token)
                 print(f"refresh_access_token  {result=}")
                 if result:
                     new_access_token = result.get("access_token")
                     email = result.get("email")
                     user = await repository_users.get_user_by_email(str(email), db)
+            else:
+                await repository_users.update_user_refresh_token(user, "", db)
+                user = None
     if user is None:
         raise credentials_exception
     auth_result: dict[str, User | str] = {"user": user}
