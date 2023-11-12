@@ -23,6 +23,8 @@ async def update_user_refresh_token(
     user: User, refresh_token: str | None, db: Session
 ) -> str | None:
     try:
+        if user is None:
+            return None
         user.refresh_token = refresh_token
         db.commit()
         return refresh_token
@@ -35,11 +37,7 @@ async def update_by_name_refresh_token(
 ) -> str | None:
     try:
         user = await get_user_by_name(username, db)
-        if user is None:
-            return None
-        user.refresh_token = refresh_token
-        db.commit()
-        return refresh_token
+        return await update_user_refresh_token(user, refresh_token, db)
     except Exception:
         ...
     return None
