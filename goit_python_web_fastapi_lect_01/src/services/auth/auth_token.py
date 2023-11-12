@@ -26,10 +26,11 @@ class PassCrypt:
         return self.pwd_context.hash(password)
 
 
-class AuthHash(PassCrypt):
+class AuthToken(PassCrypt):
     SECRET_KEY: str
     ALGORITHM: str
-
+    
+    # constructor
     def __init__(
         self, init_key: str | None = None, init_algorithm: str = "HS512"
     ) -> None:
@@ -39,7 +40,8 @@ class AuthHash(PassCrypt):
         assert self.SECRET_KEY, "MISSED TOKEN SECRET_KEY"
         self.ALGORITHM = init_algorithm
         assert self.ALGORITHM, "MISSED ALGORITHM"
-
+    
+    # JWT operation
     def encode_jwt(self, to_encode) -> str:
         return jwt.encode(to_encode, self.SECRET_KEY, algorithm=self.ALGORITHM)
 
@@ -66,7 +68,5 @@ class AuthHash(PassCrypt):
         to_encode.update(
             {"iat": datetime.utcnow(), "exp": expire, "scope": "access_token"}
         )
-        encoded_access_token = jwt.encode(
-            to_encode, self.SECRET_KEY, algorithm=self.ALGORITHM
-        )
+        encoded_access_token = self.encode_jwt(to_encode) 
         return encoded_access_token
