@@ -3,6 +3,7 @@ from typing import Any, Optional, Annotated
 from fastapi import Form
 
 from pydantic import BaseModel, Field, EmailStr
+from sqlalchemy import Column, String
 
 
 class AccessTokenRefreshResponse(BaseModel):
@@ -17,8 +18,9 @@ class AccessTokenResponse(BaseModel):
 
 
 class UserModel(BaseModel):
-    username: str
-    password: str
+    username: str = Field(min_length=6, max_length=150)
+    email: EmailStr
+    password: str = Field(min_length=6, max_length=32)
     # grant_type: Optional[Any] = None
     # scope: Optional[str] = None
     # client_id: Optional[Any] = None
@@ -30,4 +32,10 @@ class NewUserResponse(BaseModel):
 
 
 class UserResponse(BaseModel):
-    user: UserModel
+    id: int
+    username: str
+    email: str
+    avatar: Optional[str|None] = None
+
+    class Config:
+        from_attributes = True

@@ -12,7 +12,7 @@ from sqlalchemy.orm import Session
 from src.database.db import get_db
 from src.database.models import User
 
-from src.shemas.users import AccessTokenResponse, NewUserResponse
+from src.shemas.users import AccessTokenResponse, NewUserResponse, UserResponse
 
 from src.repository.auth import auth as repository_auth
 from src.repository import users as repository_users
@@ -23,7 +23,7 @@ security = HTTPBearer()
 
 
 @router.post(
-    "/signup", response_model=NewUserResponse, status_code=status.HTTP_201_CREATED
+    "/signup", response_model=UserResponse, response_model_exclude_none=True, status_code=status.HTTP_201_CREATED
 )
 async def signup(body: HTTPBasicCredentials, db: Session = Depends(get_db)):
     new_user = await repository_auth.signup(
@@ -33,7 +33,7 @@ async def signup(body: HTTPBasicCredentials, db: Session = Depends(get_db)):
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT, detail="Account already exists"
         )
-    return {"username": new_user.email}
+    return new_user
 
 
 # Annotated[OAuth2PasswordRequestForm, Depends()]
