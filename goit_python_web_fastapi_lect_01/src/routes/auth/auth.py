@@ -1,4 +1,4 @@
-from typing import Annotated, List
+from typing import Annotated, Any, List
 
 from fastapi import APIRouter, Path, Depends, HTTPException, Security, status, Cookie
 from fastapi.security import (
@@ -93,13 +93,55 @@ async def get_current_user(
     return auth_result
 
 
+async def get_current_user_dbtoken(
+    access_token: Annotated[str | None, Cookie()] = None,
+    token: str | None = Depends(repository_auth.auth_service.auth_scheme),
+    db: Session = Depends(get_db),
+) -> dict | None:
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+    user = None
+    new_access_token = None
+    if not token:
+        token = access_token
+    if token:
+        user = await repository_auth.a_get_current_user(token, db)
+        if not user:
+            email = await repository_auth.auth_service.decode_refresh_token(token)
+            user = await repository_users.get_user_by_email(str(email), db)
+            refresh_token: Any = user.refresh_token  # type: ignore
+            if refresh_token:
+                result = await refresh_access_token(refresh_token)
+                print(f"refresh_access_token  {result=}")
+                if result:
+                    new_access_token = result.get("access_token")
+                    email = result.get("email")
+                    user = await repository_users.get_user_by_email(str(email), db)
+    if user is None:
+        raise credentials_exception
+    auth_result: dict[str, User | str] = {"user": user}
+    if new_access_token:
+        auth_result.update({"new_access_token": new_access_token})
+
+    return auth_result
+
+
 @router.get("/secret")
 async def read_item(current_user: User = Depends(get_current_user)):
     auth_result = {"email": current_user.get("user").email}
     if current_user.get("new_access_token"):
-        auth_result.update(
-            {"new_access_token": current_user.get("new_access_token")}
-        )
+        auth_result.update({"new_access_token": current_user.get("new_access_token")})
+    return {"message": "secret router", "owner": auth_result}
+
+
+@router.get("/secret_dbtoken")
+async def read_item_dbtoken(current_user: User = Depends(get_current_user_dbtoken)):
+    auth_result = {"email": current_user.get("user").email}
+    if current_user.get("new_access_token"):
+        auth_result.update({"new_access_token": current_user.get("new_access_token")})
     return {"message": "secret router", "owner": auth_result}
 
 
