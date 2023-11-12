@@ -13,27 +13,36 @@ from src.database.db import get_db
 from src.database.models import User
 
 
-class AuthHash:
-    pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+class PassCrypt:
+    pwd_context: CryptContext
 
-    SECRET_KEY: str
-    ALGORITHM: str
-
-    def __init__(self, init_key: str | None = None, init_algorithm: str = "HS512") -> None:
-        self.SECRET_KEY: str = init_key if init_key else environ.get("TOKEN_SECRET_KEY", "") 
-        assert self.SECRET_KEY, "MISSED TOKEN SECRET_KEY"
-        self.ALGORITHM = init_algorithm
-        assert self.ALGORITHM, "MISSED ALGORITHM"
+    def __init__(self, scheme: str = "bcrypt") -> None:
+        self.pwd_context = CryptContext(schemes=[scheme], deprecated="auto")
 
     def verify_password(self, plain_password, hashed_password):
         return self.pwd_context.verify(plain_password, hashed_password)
 
     def get_password_hash(self, password: str):
         return self.pwd_context.hash(password)
-    
+
+
+class AuthHash(PassCrypt):
+    SECRET_KEY: str
+    ALGORITHM: str
+
+    def __init__(
+        self, init_key: str | None = None, init_algorithm: str = "HS512"
+    ) -> None:
+        self.SECRET_KEY: str = (
+            init_key if init_key else environ.get("TOKEN_SECRET_KEY", "")
+        )
+        assert self.SECRET_KEY, "MISSED TOKEN SECRET_KEY"
+        self.ALGORITHM = init_algorithm
+        assert self.ALGORITHM, "MISSED ALGORITHM"
+
     def encode_jwt(self, to_encode) -> str:
-            return jwt.encode(to_encode, self.SECRET_KEY, algorithm=self.ALGORITHM)
-    
+        return jwt.encode(to_encode, self.SECRET_KEY, algorithm=self.ALGORITHM)
+
     def decode_jwt(self, token) -> str | None:
         try:
             # Decode JWT
@@ -42,7 +51,7 @@ class AuthHash:
                 email = payload["sub"]
                 return email
         except JWTError as e:
-                return None
+            return None
         return None
 
     # define a function to generate a new access token
@@ -61,5 +70,3 @@ class AuthHash:
             to_encode, self.SECRET_KEY, algorithm=self.ALGORITHM
         )
         return encoded_access_token
-
-
