@@ -54,9 +54,4 @@ async def login(username: str, password: str, db: Session):
 
 
 async def update_refresh_token(username: str, refresh_token: str, db: Session):
-    user = await repository_users.get_user_by_name(username, db)
-    if user is None:
-        return None
-    user.refresh_token = refresh_token
-    db.commit()
-    return refresh_token
+    return await repository_users.update_by_name_refresh_token(username, refresh_token, db)

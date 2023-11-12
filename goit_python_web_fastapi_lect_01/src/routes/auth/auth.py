@@ -14,6 +14,7 @@ from src.database.models import User
 from src.shemas.users import AccessTokenResponse, NewUserResponse
 
 from src.repository.auth import auth as repository_auth
+from src.repository import users as repository_users
 
 router = APIRouter(prefix="", tags=["Auth"])
 
@@ -83,18 +84,16 @@ async def refresh_token(
 ):
     token: str = credentials.credentials
     email = await repository_auth.auth_service.decode_refresh_token(token)
-    user: User | None = db.query(User).filter(User.email == email).first()
+    user: User | None = await repository_users.get_user_by_email(email,db)
     if user and user.refresh_token != token:  # type: ignore
-            user.refresh_token = None   
-            db.commit()
+            await repository_users.update_user_refresh_token(user,"", db)
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid refresh token"
             )
 
     access_token = await repository_auth.auth_service.create_access_token(data={"sub": email})
     refresh_token = await repository_auth.auth_service.create_refresh_token(data={"sub": email})
-    user.refresh_token = refresh_token # type: ignore
-    db.commit()
+    await repository_users.update_user_refresh_token(user, refresh_token, db)
     return {
         "access_token": access_token,
         "refresh_token": refresh_token,
