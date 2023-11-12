@@ -64,6 +64,10 @@ After wrong refresh_token used, refresh_token in DB cleared
 ![auth show new token](doc/auth-19-token_db-cleared.png)
 
 
+### GRAVATAR LINK
+![auth GRAVATAR](doc/auth-20-gravatar.png)
+
+
 ## DOCKER
 ### .env
 ```

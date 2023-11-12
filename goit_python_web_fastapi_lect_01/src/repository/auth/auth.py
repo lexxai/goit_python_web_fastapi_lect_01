@@ -27,6 +27,8 @@ async def signup(body, db: Session):
         if user is not None:
             return None
         body.password = auth_service.get_password_hash(body.password)
+        # if not body.email:
+        #     body.email = body.username
         new_user = await repository_users.create_user(body, db)
     except Exception:
         return None

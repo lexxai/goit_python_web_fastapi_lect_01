@@ -1,3 +1,4 @@
+from libgravatar import Gravatar
 from sqlalchemy.orm import Session
 from src.shemas.users import UserModel
 
@@ -6,11 +7,8 @@ from src.database.models import User
 
 async def create_user(body: UserModel, db: Session) -> User | None:
     try:
-        new_user = User(
-            username=body.username,
-            email=body.username,
-            password=body.password,
-        )
+        g = Gravatar(body.email)
+        new_user = User(**body.model_dump(), avatar = g.get_image())
         db.add(new_user)
         db.commit()
         db.refresh(new_user)
