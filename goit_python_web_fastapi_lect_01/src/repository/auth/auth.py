@@ -21,7 +21,9 @@ async def a_get_current_user(token: str, db: Session) -> User | None:
 
 
 async def signup(body, db: Session):
+async def signup(body, db: Session):
     try:
+        user = await repository_users.get_user_by_name(body.username, db)
         user = await repository_users.get_user_by_name(body.username, db)
         if user is not None:
             return None
