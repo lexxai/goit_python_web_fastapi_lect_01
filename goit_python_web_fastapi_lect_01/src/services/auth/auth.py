@@ -21,23 +21,6 @@ class Auth(AuthToken):
     auth_response_model = OAuth2PasswordRequestForm
     token_response_model = AccessTokenRefreshResponse
     
-    
-    async def get_current_user(
-        self, token: str = Depends(auth_scheme), db: Session = Depends(get_db)
-    ) -> User | None:
-        credentials_exception = HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Could not validate credentials",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-        email = self.decode_jwt(token)
-        if email is None:
-            raise credentials_exception
-        user = await repository_users.get_user_by_email(email, db)
-        if user is None:
-            raise credentials_exception
-        return user
-
     # define a function to generate a new refresh token
     async def create_refresh_token(
         self, data: dict, expires_delta: Optional[float] = None

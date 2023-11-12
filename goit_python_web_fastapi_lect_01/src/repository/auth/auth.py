@@ -1,11 +1,12 @@
 from sqlalchemy.orm import Session
-#from fastapi import Depends
+
+# from fastapi import Depends
 
 from src.database.models import User
 from src.services.auth.auth import Auth
 from src.repository import users as repository_users
-#from src.database.db import get_db
 
+# from src.database.db import get_db
 
 
 auth_service = Auth()
@@ -22,17 +23,19 @@ async def a_get_current_user(token: str, db: Session) -> User | None:
 async def signup(username: str, password: str, db: Session):
     try:
         user = await repository_users.get_user_by_name(username, db)
-        if user:
+        if user is not None:
             return None
         new_user = User(
-            email=username, password=auth_service.get_password_hash(password)
+            username=username,
+            email=username,
+            password=auth_service.get_password_hash(password),
         )
         db.add(new_user)
         db.commit()
         db.refresh(new_user)
         return new_user
-    except Exception:
-        ...
+    except Exception as err:
+        print("signup err:", err)
     return None
 
 

@@ -13,6 +13,7 @@ class PassCrypt:
 
     def __init__(self, scheme: str = "bcrypt") -> None:
         self.pwd_context = CryptContext(schemes=[scheme], deprecated="auto")
+        # print("init PassCrypt ", scheme, self.pwd_context)
 
     def verify_password(self, plain_password, hashed_password):
         return self.pwd_context.verify(plain_password, hashed_password)
@@ -35,6 +36,7 @@ class AuthToken(PassCrypt):
         assert self.SECRET_KEY, "MISSED TOKEN SECRET_KEY"
         self.ALGORITHM = init_algorithm
         assert self.ALGORITHM, "MISSED ALGORITHM"
+        super().__init__()
     
     # JWT operation
     def encode_jwt(self, to_encode) -> str:
