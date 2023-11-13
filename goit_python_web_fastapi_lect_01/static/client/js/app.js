@@ -3,6 +3,10 @@ const BASE_URL = "http://localhost:9000";
 
 console.log(`token=${token}`);
 
+function setLoading(target) {
+    target.innerHTML='<div class="alert alert-primary" role="alert">Loading...</div>'
+}
+
 get_cats = async () => {
   const URL = `${BASE_URL}/api/cats`;
   const response = await fetch(URL, {
@@ -24,6 +28,7 @@ get_cats = async () => {
 };
 
 get_owners = async () => {
+  setLoading(owners);
   const URL = `${BASE_URL}/api/owners`;
   const response = await fetch(URL, {
     method: "GET",
@@ -57,7 +62,8 @@ ownerCreate.addEventListener("submit", async (e) => {
     },
     body: raw,
   });
-  if (response.ok) {
+  if (response.status == 201) {
+    ownerCreate.reset();
     get_owners();
   }
 });
