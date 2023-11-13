@@ -6,19 +6,6 @@ from pydantic import BaseModel, Field, EmailStr
 from src.database.models import Role
 
 
-# class AccessTokenRefreshResponse(BaseModel):
-#     token_type: str = "bearer"
-#     access_token: str
-#     expire_access_token: datetime
-#     refresh_token: str
-#     expire_refresh_token: datetime
-
-
-# class AccessTokenResponse(BaseModel):
-#     access_token: str
-#     token_type: str = "bearer"
-
-
 class UserModel(BaseModel):
     username: str = Field(min_length=2, max_length=150)
     email: EmailStr
