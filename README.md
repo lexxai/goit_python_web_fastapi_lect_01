@@ -72,6 +72,18 @@ After wrong refresh_token used, refresh_token in DB cleared
 ![auth GRAVATAR](doc/auth-20-gravatar.png)
 
 
+## JavaSript Client
+### Login
+![login](doc/js-clien-01-login.png)
+
+### Auth token local storage
+![login](doc/js-clien-03-token-storage.png)
+
+### List cats and owners
+![login](doc/js-clien-02-list.png)
+
+
+
 ## DOCKER
 ### .env
 ```
