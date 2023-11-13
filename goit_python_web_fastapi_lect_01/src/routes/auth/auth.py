@@ -1,5 +1,14 @@
 from typing import Annotated, Any, List
-from fastapi import APIRouter, Depends, HTTPException, Request, Response, Security, status, Cookie
+from fastapi import (
+    APIRouter,
+    Depends,
+    HTTPException,
+    Request,
+    Response,
+    Security,
+    status,
+    Cookie,
+)
 from fastapi.security import (
     HTTPAuthorizationCredentials,
     HTTPBasicCredentials,
@@ -37,7 +46,8 @@ async def signup(body: UserModel, db: Session = Depends(get_db)):
 # Annotated[OAuth2PasswordRequestForm, Depends()]
 # auth_response_model = Depends()
 @router.post("/login", response_model=repository_auth.auth_service.token_response_model)
-async def login(response: Response,
+async def login(
+    response: Response,
     body: Annotated[repository_auth.auth_service.auth_response_model, Depends()],
     db: Session = Depends(get_db),
 ):
@@ -45,9 +55,15 @@ async def login(response: Response,
         username=body.username, password=body.password, db=db
     )
     if token is None:
+        response.delete_cookie(
+            key="access_token", httponly=True, path="/api/"
+        )
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid credentianal",
+            headers={
+                "set-cookie": response.headers.get("set-cookie",""),
+            },
         )
     refresh_token = token.get("refresh_token")
     if refresh_token:
@@ -56,13 +72,25 @@ async def login(response: Response,
         )
     new_access_token = token.get("access_token")
     if new_access_token:
-        response.set_cookie(key="access_token", value=new_access_token, httponly=True, path="/api/", expires=token.get("expire_access_token"))
+        response.set_cookie(
+            key="access_token",
+            value=new_access_token,
+            httponly=True,
+            path="/api/",
+            expires=token.get("expire_access_token"),
+        )
     else:
         response.delete_cookie(key="access_token", httponly=True, path="/api/")
 
     if refresh_token:
         print(f"{token.get('expire_refresh_token')=}")
-        response.set_cookie(key="refresh_token", value=refresh_token, httponly=True, path="/api/", expires=token.get("expire_refresh_token"))
+        response.set_cookie(
+            key="refresh_token",
+            value=refresh_token,
+            httponly=True,
+            path="/api/",
+            expires=token.get("expire_refresh_token"),
+        )
     else:
         response.delete_cookie(key="refresh_token", httponly=True, path="/api/")
     return token
@@ -73,18 +101,21 @@ async def get_current_user(
     access_token: Annotated[str | None, Cookie()] = None,
     refresh_token: Annotated[str | None, Cookie()] = None,
     token: str | None = Depends(repository_auth.auth_service.auth_scheme),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ) -> User | None:
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
-        headers={"WWW-Authenticate": "Bearer"},
+        headers={
+            "WWW-Authenticate": "Bearer",
+             "set-cookie": response.headers.get("set-cookie",""),
+        },
     )
     user = None
     new_access_token = None
     print(f"{access_token=}, {refresh_token=}, {token=}")
     if not token:
-        print("used cookie access_token") 
+        print("used cookie access_token")
         token = access_token
     if token:
         user = await repository_auth.a_get_current_user(token, db)
@@ -98,9 +129,17 @@ async def get_current_user(
                 email = result.get("email")
                 user = await repository_users.get_user_by_email(str(email), db)
                 if new_access_token:
-                    response.set_cookie(key="access_token", value=new_access_token, httponly=True, path="/api/", expires=result.get("expire_token"))
+                    response.set_cookie(
+                        key="access_token",
+                        value=new_access_token,
+                        httponly=True,
+                        path="/api/",
+                        expires=result.get("expire_token"),
+                    )
                 else:
-                    response.delete_cookie(key="access_token", httponly=True, path="/api/")
+                    response.delete_cookie(
+                        key="access_token", httponly=True, path="/api/"
+                    )
     if user is None:
         raise credentials_exception
     return user
@@ -116,7 +155,10 @@ async def get_current_user_dbtoken(
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
-        headers={"WWW-Authenticate": "Bearer"},
+        headers={
+            "WWW-Authenticate": "Bearer",
+            "set-cookie": response.headers["set-cookie"],
+        },
     )
     user = None
     new_access_token = None
@@ -139,9 +181,17 @@ async def get_current_user_dbtoken(
                     email = result.get("email")
                     user = await repository_users.get_user_by_email(str(email), db)
                     if new_access_token:
-                        response.set_cookie(key="access_token", value=new_access_token, httponly=True, path="/api/")
+                        response.set_cookie(
+                            key="access_token",
+                            value=new_access_token,
+                            httponly=True,
+                            path="/api/",
+                            expires=result.get("expire_token"),
+                        )
                     else:
-                        response.delete_cookie(key="access_token", httponly=True, path="/api/")
+                        response.delete_cookie(
+                            key="access_token", httponly=True, path="/api/"
+                        )
             else:
                 await repository_users.update_user_refresh_token(user, "", db)
                 response.delete_cookie(key="refresh_token", httponly=True, path="/api/")
@@ -167,15 +217,24 @@ async def refresh_access_token(refresh_token: str) -> dict[str, Any] | None:
     if refresh_token:
         email = await repository_auth.auth_service.decode_refresh_token(refresh_token)
         if email:
-            access_token, expire_token = await repository_auth.auth_service.create_access_token(
+            (
+                access_token,
+                expire_token,
+            ) = await repository_auth.auth_service.create_access_token(
                 data={"sub": email}
             )
-            return {"access_token": access_token, "expire_token": expire_token,  "email": email}
+            return {
+                "access_token": access_token,
+                "expire_token": expire_token,
+                "email": email,
+            }
     return None
 
 
 @router.get("/refresh_token")
-async def refresh_token(response: Response, refresh_token: Annotated[str | None, Cookie()] = None,
+async def refresh_token(
+    response: Response,
+    refresh_token: Annotated[str | None, Cookie()] = None,
     credentials: HTTPAuthorizationCredentials = Security(security),
     db: Session = Depends(get_db),
 ):
@@ -188,26 +247,41 @@ async def refresh_token(response: Response, refresh_token: Annotated[str | None,
     user: User | None = await repository_users.get_user_by_email(email, db)
     if user and user.refresh_token != token:  # type: ignore
         await repository_users.update_user_refresh_token(user, None, db)
-        # TODO  Not deleted if EXEPTION
         response.delete_cookie(key="refresh_token", httponly=True, path="/api/")
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid refresh token"
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid refresh token",
+            headers={ "set-cookie": response.headers.get("set-cookie",""),},
         )
 
-    new_access_token, expire_access_token = await repository_auth.auth_service.create_access_token(
-        data={"sub": email}
-    )
-    new_refresh_token, expire_token = await repository_auth.auth_service.create_refresh_token(
-        data={"sub": email}
-    )
+    (
+        new_access_token,
+        expire_access_token,
+    ) = await repository_auth.auth_service.create_access_token(data={"sub": email})
+    (
+        new_refresh_token,
+        expire_token,
+    ) = await repository_auth.auth_service.create_refresh_token(data={"sub": email})
     await repository_users.update_user_refresh_token(user, new_refresh_token, db)
     if new_access_token:
-        response.set_cookie(key="access_token", value=new_access_token, httponly=True, path="/api/", expires=expire_access_token)
+        response.set_cookie(
+            key="access_token",
+            value=new_access_token,
+            httponly=True,
+            path="/api/",
+            expires=expire_access_token,
+        )
     else:
         response.delete_cookie(key="access_token", httponly=True, path="/api/")
-    
+
     if new_refresh_token:
-        response.set_cookie(key="refresh_token", value=new_refresh_token, httponly=True, path="/api/", expires=expire_token)
+        response.set_cookie(
+            key="refresh_token",
+            value=new_refresh_token,
+            httponly=True,
+            path="/api/",
+            expires=expire_token,
+        )
     else:
         response.delete_cookie(key="refresh_token", httponly=True, path="/api/")
     return {
