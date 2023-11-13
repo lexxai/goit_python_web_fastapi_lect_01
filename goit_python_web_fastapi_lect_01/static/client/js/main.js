@@ -26,7 +26,7 @@ form?.addEventListener("submit", async (e) => {
         })
 
     }).then((response) => {
-        if (response.status != 202) {
+        if (!response.ok) {
           throw "ERROR STATUS: " + response.status;
         }
         return response.json()
@@ -42,6 +42,6 @@ form?.addEventListener("submit", async (e) => {
       }
     }).catch((err) => {
       console.log("ERROR", err)
-      window.location="error.html"
+      window.location="index.html?error=login"
     });
 });
