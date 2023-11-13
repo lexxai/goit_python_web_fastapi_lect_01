@@ -1,10 +1,8 @@
 function setCookie(cname, cvalue, expire) {
   const d = new Date(expire);
-  const expires = "expires="+ d.toUTCString();
+  const expires = "expires=" + d.toUTCString();
   const cookie = cname + "=" + cvalue + ";" + expires + ";path=/;";
-  // console.log(cookie, d.toUTCString());
   document.cookie = cookie;
-  //console.log(document.cookie);
 }
 
 
@@ -15,7 +13,7 @@ form?.addEventListener("submit", async (e) => {
   const t = e.target;
   const username = t.username.value;
   const password = t.password.value;
-  const response = await fetch("http://localhost:9000/api/auth/login",
+  await fetch("http://localhost:9000/api/auth/login",
     {
       method: "POST",
       headers: {
@@ -25,7 +23,6 @@ form?.addEventListener("submit", async (e) => {
         {
           username: username,
           password: password
-
         })
 
     }).then((response) => response.json()).then((json) => {
