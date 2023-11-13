@@ -27,6 +27,8 @@ router = APIRouter(prefix="", tags=["Auth"])
 
 security = HTTPBearer()
 
+SET_COOKIES = False
+
 
 @router.post(
     "/signup",
@@ -71,7 +73,7 @@ async def login(
             username=body.username, refresh_token=refresh_token, db=db
         )
     new_access_token = token.get("access_token")
-    if new_access_token:
+    if new_access_token and SET_COOKIES:
         response.set_cookie(
             key="access_token",
             value=new_access_token,
@@ -82,7 +84,7 @@ async def login(
     else:
         response.delete_cookie(key="access_token", httponly=True, path="/api/")
 
-    if refresh_token:
+    if refresh_token and SET_COOKIES:
         print(f"{token.get('expire_refresh_token')=}")
         response.set_cookie(
             key="refresh_token",
@@ -128,7 +130,7 @@ async def get_current_user(
                 new_access_token = result.get("access_token")
                 email = result.get("email")
                 user = await repository_users.get_user_by_email(str(email), db)
-                if new_access_token:
+                if new_access_token and SET_COOKIES:
                     response.set_cookie(
                         key="access_token",
                         value=new_access_token,
@@ -180,7 +182,7 @@ async def get_current_user_dbtoken(
                     new_access_token = result.get("access_token")
                     email = result.get("email")
                     user = await repository_users.get_user_by_email(str(email), db)
-                    if new_access_token:
+                    if new_access_token and SET_COOKIES:
                         response.set_cookie(
                             key="access_token",
                             value=new_access_token,
@@ -263,7 +265,7 @@ async def refresh_token(
         expire_token,
     ) = await repository_auth.auth_service.create_refresh_token(data={"sub": email})
     await repository_users.update_user_refresh_token(user, new_refresh_token, db)
-    if new_access_token:
+    if new_access_token and SET_COOKIES:
         response.set_cookie(
             key="access_token",
             value=new_access_token,
@@ -274,7 +276,7 @@ async def refresh_token(
     else:
         response.delete_cookie(key="access_token", httponly=True, path="/api/")
 
-    if new_refresh_token:
+    if new_refresh_token and SET_COOKIES:
         response.set_cookie(
             key="refresh_token",
             value=new_refresh_token,
