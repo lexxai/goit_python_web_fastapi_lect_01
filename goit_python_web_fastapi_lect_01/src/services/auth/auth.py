@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Optional
 
 from fastapi import Depends, HTTPException, status
@@ -24,19 +24,20 @@ class Auth(AuthToken):
     # define a function to generate a new refresh token
     async def create_refresh_token(
         self, data: dict, expires_delta: Optional[float] = None
-    ):
+    ) -> tuple[str, datetime]:
         to_encode = data.copy()
         if expires_delta:
             expire = datetime.utcnow() + timedelta(seconds=expires_delta)
         else:
             expire = datetime.utcnow() + timedelta(days=7)
+        expire = expire.replace(tzinfo=timezone.utc)
         to_encode.update(
             {"iat": datetime.utcnow(), "exp": expire, "scope": "refresh_token"}
         )
         encoded_refresh_token = jwt.encode(
             to_encode, self.SECRET_KEY, algorithm=self.ALGORITHM
         )
-        return encoded_refresh_token
+        return encoded_refresh_token, expire
 
     async def decode_refresh_token(self, refresh_token: str):
         try:

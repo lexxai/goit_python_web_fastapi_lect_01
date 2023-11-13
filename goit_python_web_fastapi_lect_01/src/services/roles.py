@@ -10,7 +10,7 @@ class RoleAccess:
     def __init__(self, allowed_roles: List[Role]) -> None:
         self.allowed_roles = allowed_roles
 
-    async def __call__(self, request: Request,  current_user: User = Depends(auth.get_current_user)) -> Any:
+    async def __call__(self, request: Request, current_user: User = Depends(auth.get_current_user)) -> Any:
         print(request.method, request.url)
         print(f"User role: {current_user['user'].role}")
         print(f"Allower roles: {self.allowed_roles}")

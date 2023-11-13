@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from os import environ
 from typing import Optional
 
@@ -55,17 +55,18 @@ class AuthToken(PassCrypt):
     # define a function to generate a new access token
     async def create_access_token(
         self, data: dict, expires_delta: Optional[float] = None
-    ):
+    ) -> tuple[str,datetime]:
         to_encode = data.copy()
         if expires_delta:
             expire = datetime.utcnow() + timedelta(seconds=expires_delta)
         else:
             expire = datetime.utcnow() + timedelta(minutes=15)
+        expire = expire.replace(tzinfo=timezone.utc)
         to_encode.update(
             {"iat": datetime.utcnow(), "exp": expire, "scope": "access_token"}
         )
         encoded_access_token = self.encode_jwt(to_encode)
-        return encoded_access_token
+        return encoded_access_token, expire
 
     async def decode_access_token(self, access_token: str) -> str | None:
         try:
