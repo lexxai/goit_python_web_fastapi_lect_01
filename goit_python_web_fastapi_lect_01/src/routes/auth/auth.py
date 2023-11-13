@@ -175,20 +175,26 @@ async def refresh_access_token(refresh_token: str) -> dict[str, Any] | None:
 
 
 @router.get("/refresh_token")
-async def refresh_token(response: Response,
+async def refresh_token(response: Response, refresh_token: Annotated[str | None, Cookie()] = None,
     credentials: HTTPAuthorizationCredentials = Security(security),
     db: Session = Depends(get_db),
 ):
     token: str = credentials.credentials
+    print(f"refresh_token {token=}")
+    if not token and refresh_token:
+        token = refresh_token
     email = await repository_auth.auth_service.decode_refresh_token(token)
+    print(f"refresh_token {email=}")
     user: User | None = await repository_users.get_user_by_email(email, db)
     if user and user.refresh_token != token:  # type: ignore
-        await repository_users.update_user_refresh_token(user, "", db)
+        await repository_users.update_user_refresh_token(user, None, db)
+        # TODO  Not deleted if EXEPTION
+        response.delete_cookie(key="refresh_token", httponly=True, path="/api/")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid refresh token"
         )
 
-    new_access_token = await repository_auth.auth_service.create_access_token(
+    new_access_token, expire_access_token = await repository_auth.auth_service.create_access_token(
         data={"sub": email}
     )
     new_refresh_token, expire_token = await repository_auth.auth_service.create_refresh_token(
@@ -196,7 +202,7 @@ async def refresh_token(response: Response,
     )
     await repository_users.update_user_refresh_token(user, new_refresh_token, db)
     if new_access_token:
-        response.set_cookie(key="access_token", value=new_access_token, httponly=True, path="/api/")
+        response.set_cookie(key="access_token", value=new_access_token, httponly=True, path="/api/", expires=expire_access_token)
     else:
         response.delete_cookie(key="access_token", httponly=True, path="/api/")
     
