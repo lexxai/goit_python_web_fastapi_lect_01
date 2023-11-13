@@ -85,7 +85,15 @@ After wrong refresh_token used, refresh_token in DB cleared
 ## Owner create
 ![Owner create](doc/js-clien-04-form.png)
 
-
+## Client Js FastAPI Static
+### Index
+![index](doc/static-client-01.png)
+### Login
+![index](doc/static-client-02.png)
+### List 
+![index](doc/static-client-03.png)
+### Docs
+![index](doc/static-client-04.png)
 
 ## DOCKER
 ### .env
