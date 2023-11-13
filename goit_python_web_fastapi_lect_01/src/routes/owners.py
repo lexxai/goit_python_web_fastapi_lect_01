@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 from src.database.db import get_db
 from src.shemas.owner import OwnerModel, OwnerResponse
 from src.repository import owners as repository_owners
+from src.routes.auth import auth
 
 
 router = APIRouter(prefix="/owners", tags=["owners"])

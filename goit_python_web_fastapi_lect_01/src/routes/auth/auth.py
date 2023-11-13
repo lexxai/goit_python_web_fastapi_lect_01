@@ -1,19 +1,15 @@
 from typing import Annotated, Any, List
-
-from fastapi import APIRouter, Path, Depends, HTTPException, Security, status, Cookie
+from fastapi import APIRouter, Depends, HTTPException, Security, status, Cookie
 from fastapi.security import (
     HTTPAuthorizationCredentials,
     HTTPBasicCredentials,
     HTTPBearer,
 )
-
 from sqlalchemy.orm import Session
 
 from src.database.db import get_db
 from src.database.models import User
-
-from src.shemas.users import AccessTokenResponse, UserResponse, UserModel
-
+from src.shemas.users import UserResponse, UserModel
 from src.repository.auth import auth as repository_auth
 from src.repository import users as repository_users
 
