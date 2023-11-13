@@ -3,6 +3,7 @@ from fastapi import FastAPI, Path, Query, Depends, HTTPException, Request, statu
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 
 from sqlalchemy import text
@@ -18,12 +19,23 @@ from src.conf.auth import AUTH_LIB
 
 app = FastAPI()
 
+origins = [ 
+    "http://localhost:3000"
+    ]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
-
 templates = Jinja2Templates(directory="templates")
 
-PUBLIC_APP = True
+
+
 
 
 @app.middleware("http")
