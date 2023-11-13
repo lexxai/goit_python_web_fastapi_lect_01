@@ -12,7 +12,7 @@ get_cats = async () => {
     },
   });
   if (response.ok) {
-    cats.innerHTML="";
+    cats.innerHTML = "";
     result = await response.json();
     for (cat of result) {
       el = document.createElement("li");
@@ -32,7 +32,7 @@ get_owners = async () => {
     },
   });
   if (response.ok) {
-    owners.innerHTML="";
+    owners.innerHTML = "";
     result = await response.json();
     for (owner of result) {
       el = document.createElement("li");
@@ -42,6 +42,25 @@ get_owners = async () => {
     }
   }
 };
+
+ownerCreate.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const URL = `${BASE_URL}/api/owners/`;
+  const raw = JSON.stringify({
+    email: ownerCreate?.email?.value,
+  });
+  const response = await fetch(URL, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+    body: raw,
+  });
+  if (response.ok) {
+    get_owners();
+  }
+});
 
 get_cats();
 get_owners();
