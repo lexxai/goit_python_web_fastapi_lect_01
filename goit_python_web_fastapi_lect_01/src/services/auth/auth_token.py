@@ -67,3 +67,16 @@ class AuthToken(PassCrypt):
         )
         encoded_access_token = self.encode_jwt(to_encode) 
         return encoded_access_token
+    
+
+    async def decode_access_token(self, access_token: str):
+        try:
+            payload = jwt.decode(
+                access_token, self.SECRET_KEY, algorithms=[self.ALGORITHM]
+            )
+            if payload["scope"] == "access_token":
+                email = payload["sub"]
+                return email
+            return None
+        except JWTError:
+            return None

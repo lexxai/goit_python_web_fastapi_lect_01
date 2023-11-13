@@ -29,8 +29,6 @@ class UserModel(BaseModel):
 class NewUserResponse(BaseModel):
     username: str
 
-class roles(str):
-    ...
 
 
 class UserResponse(BaseModel):
@@ -38,7 +36,7 @@ class UserResponse(BaseModel):
     username: str
     email: str
     avatar: str | None
-    # roles: roles | str
+    role: Role
 
     class Config:
         from_attributes = True
