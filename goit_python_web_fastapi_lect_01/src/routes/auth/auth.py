@@ -73,28 +73,28 @@ async def login(
             username=body.username, refresh_token=refresh_token, db=db
         )
     new_access_token = token.get("access_token")
-    if new_access_token and SET_COOKIES:
-        response.set_cookie(
-            key="access_token",
-            value=new_access_token,
-            httponly=True,
-            path="/api/",
-            expires=token.get("expire_access_token"),
-        )
-    else:
-        response.delete_cookie(key="access_token", httponly=True, path="/api/")
-
-    if refresh_token and SET_COOKIES:
-        print(f"{token.get('expire_refresh_token')=}")
-        response.set_cookie(
-            key="refresh_token",
-            value=refresh_token,
-            httponly=True,
-            path="/api/",
-            expires=token.get("expire_refresh_token"),
-        )
-    else:
-        response.delete_cookie(key="refresh_token", httponly=True, path="/api/")
+    if SET_COOKIES:
+        if new_access_token:
+            response.set_cookie(
+                key="access_token",
+                value=new_access_token,
+                httponly=True,
+                path="/api/",
+                expires=token.get("expire_access_token"),
+            )
+        else:
+            response.delete_cookie(key="access_token", httponly=True, path="/api/")
+        if new_access_token:
+            print(f"{token.get('expire_refresh_token')=}")
+            response.set_cookie(
+                key="refresh_token",
+                value=refresh_token,
+                httponly=True,
+                path="/api/",
+                expires=token.get("expire_refresh_token"),
+            )
+        else:
+            response.delete_cookie(key="refresh_token", httponly=True, path="/api/")
     return token
 
 
@@ -130,18 +130,19 @@ async def get_current_user(
                 new_access_token = result.get("access_token")
                 email = result.get("email")
                 user = await repository_users.get_user_by_email(str(email), db)
-                if new_access_token and SET_COOKIES:
-                    response.set_cookie(
-                        key="access_token",
-                        value=new_access_token,
-                        httponly=True,
-                        path="/api/",
-                        expires=result.get("expire_token"),
-                    )
-                else:
-                    response.delete_cookie(
-                        key="access_token", httponly=True, path="/api/"
-                    )
+                if SET_COOKIES:
+                    if new_access_token:
+                        response.set_cookie(
+                            key="access_token",
+                            value=new_access_token,
+                            httponly=True,
+                            path="/api/",
+                            expires=result.get("expire_token"),
+                        )
+                    else:
+                        response.delete_cookie(
+                            key="access_token", httponly=True, path="/api/"
+                        )
     if user is None:
         raise credentials_exception
     return user
@@ -182,18 +183,19 @@ async def get_current_user_dbtoken(
                     new_access_token = result.get("access_token")
                     email = result.get("email")
                     user = await repository_users.get_user_by_email(str(email), db)
-                    if new_access_token and SET_COOKIES:
-                        response.set_cookie(
-                            key="access_token",
-                            value=new_access_token,
-                            httponly=True,
-                            path="/api/",
-                            expires=result.get("expire_token"),
-                        )
-                    else:
-                        response.delete_cookie(
-                            key="access_token", httponly=True, path="/api/"
-                        )
+                    if SET_COOKIES:
+                        if new_access_token:
+                            response.set_cookie(
+                                key="access_token",
+                                value=new_access_token,
+                                httponly=True,
+                                path="/api/",
+                                expires=result.get("expire_token"),
+                            )
+                        else:
+                            response.delete_cookie(
+                                key="access_token", httponly=True, path="/api/"
+                            )
             else:
                 await repository_users.update_user_refresh_token(user, "", db)
                 response.delete_cookie(key="refresh_token", httponly=True, path="/api/")
@@ -262,32 +264,34 @@ async def refresh_token(
     ) = await repository_auth.auth_service.create_access_token(data={"sub": email})
     (
         new_refresh_token,
-        expire_token,
+        expire_refresh_token,
     ) = await repository_auth.auth_service.create_refresh_token(data={"sub": email})
     await repository_users.update_user_refresh_token(user, new_refresh_token, db)
-    if new_access_token and SET_COOKIES:
-        response.set_cookie(
-            key="access_token",
-            value=new_access_token,
-            httponly=True,
-            path="/api/",
-            expires=expire_access_token,
-        )
-    else:
-        response.delete_cookie(key="access_token", httponly=True, path="/api/")
-
-    if new_refresh_token and SET_COOKIES:
-        response.set_cookie(
-            key="refresh_token",
-            value=new_refresh_token,
-            httponly=True,
-            path="/api/",
-            expires=expire_token,
-        )
-    else:
-        response.delete_cookie(key="refresh_token", httponly=True, path="/api/")
+    if SET_COOKIES:
+        if new_access_token:
+            response.set_cookie(
+                key="access_token",
+                value=new_access_token,
+                httponly=True,
+                path="/api/",
+                expires=expire_access_token,
+            )
+        else:
+            response.delete_cookie(key="access_token", httponly=True, path="/api/")
+        if new_access_token:
+            response.set_cookie(
+                key="refresh_token",
+                value=new_refresh_token,
+                httponly=True,
+                path="/api/",
+                expires=expire_refresh_token,
+            )
+        else:
+            response.delete_cookie(key="refresh_token", httponly=True, path="/api/")
     return {
         "access_token": new_access_token,
+        "expire_access_token": expire_access_token,
         "refresh_token": new_refresh_token,
+        "expire_refresh_token": expire_refresh_token,
         "token_type": "bearer",
     }
