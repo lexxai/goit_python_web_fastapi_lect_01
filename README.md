@@ -11,6 +11,8 @@
 - access with token:
 ![auth-01](doc/auth-01.png)
 
+### OAuth2
+
 - get_token/login by oauth2 form:
 ![auth-02](doc/auth-04.png)
 
@@ -22,6 +24,8 @@
 
 - access with token:
 ![auth-02](doc/auth-07.png)
+
+### OAuth2 + refresh
 
 - get_token/login by oauth2 form with refresh:
 ![auth-02](doc/auth-08.png)
