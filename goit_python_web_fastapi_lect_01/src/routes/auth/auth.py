@@ -57,16 +57,20 @@ async def login(
         username=body.username, password=body.password, db=db
     )
     if token is None:
-        response.delete_cookie(
-            key="access_token", httponly=True, path="/api/"
-        )
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid credentianal",
-            headers={
-                "set-cookie": response.headers.get("set-cookie",""),
-            },
-        )
+        exception_data = {
+            "status_code": status.HTTP_401_UNAUTHORIZED,
+            "detail": "Invalid credentianal",
+        }
+        if SET_COOKIES:
+            response.delete_cookie(key="access_token", httponly=True, path="/api/")
+            exception_data.update(
+                {
+                    "headers": {
+                        "set-cookie": response.headers.get("set-cookie", ""),
+                    }
+                }
+            )
+        raise HTTPException(**exception_data)
     refresh_token = token.get("refresh_token")
     if refresh_token:
         await repository_auth.update_refresh_token(
@@ -95,6 +99,7 @@ async def login(
             )
         else:
             response.delete_cookie(key="refresh_token", httponly=True, path="/api/")
+    print("login", token)
     return token
 
 
@@ -110,7 +115,7 @@ async def get_current_user(
         detail="Could not validate credentials",
         headers={
             "WWW-Authenticate": "Bearer",
-             "set-cookie": response.headers.get("set-cookie",""),
+            "set-cookie": response.headers.get("set-cookie", ""),
         },
     )
     user = None
@@ -255,7 +260,9 @@ async def refresh_token(
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid refresh token",
-            headers={ "set-cookie": response.headers.get("set-cookie",""),},
+            headers={
+                "set-cookie": response.headers.get("set-cookie", ""),
+            },
         )
 
     (

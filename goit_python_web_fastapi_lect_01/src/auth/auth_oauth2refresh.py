@@ -14,13 +14,14 @@ from starlette import status
 try:
     from src.database.db import get_db
     from src.database.models import User
-    from src.shemas.users import UserModel, AccessTokenRefreshResponse, AccessTokenResponse
+    from src.shemas.users import UserModel
+    from src.shemas.auth import AccessTokenRefreshResponse, AccessTokenResponse
 except ImportError:
     sys.path.append(str(pathlib.Path(__file__).resolve().parent.parent))
     from database.db import get_db
     from database.models import User
-    from shemas.users import UserModel, AccessTokenRefreshResponse, AccessTokenResponse
-
+    from shemas.users import UserModel
+    from shemas.auth import AccessTokenRefreshResponse, AccessTokenResponse
 
 class Hash:
     pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")

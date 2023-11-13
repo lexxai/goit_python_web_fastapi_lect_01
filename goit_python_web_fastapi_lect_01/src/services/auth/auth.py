@@ -12,7 +12,7 @@ from src.database.db import get_db
 from src.database.models import User
 from .auth_token import AuthToken
 from src.repository import users as repository_users
-from src.shemas.users import AccessTokenRefreshResponse
+from src.shemas.auth import AccessTokenRefreshResponse
 
 
 class Auth(AuthToken):
