@@ -25,13 +25,23 @@ form?.addEventListener("submit", async (e) => {
           password: password
         })
 
-    }).then((response) => response.json()).then((json) => {
+    }).then((response) => {
+        if (response.status != 202) {
+          throw "ERROR STATUS: " + response.status;
+        }
+        return response.json()
+      }
+        ).then((json) => {
       console.log(json)
       if (json?.token_type == "bearer") {
-        setCookie("access_token", json?.access_token, json?.expire_access_token);
-        setCookie("refresh_token", json?.refresh_token, json?.expire_refresh_token);
+        // setCookie("access_token", json?.access_token, json?.expire_access_token);
+        // setCookie("refresh_token", json?.refresh_token, json?.expire_refresh_token);
+        localStorage.setItem("access_token", json?.access_token);
+        localStorage.setItem("refresh_token", json?.refresh_token);
+        window.location="main.html";
       }
     }).catch((err) => {
-      console.err(err)
+      console.log("ERROR", err)
+      window.location="error.html"
     });
 });
