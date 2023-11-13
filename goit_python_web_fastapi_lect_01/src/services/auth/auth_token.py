@@ -7,7 +7,6 @@ from passlib.context import CryptContext
 from jose import JWTError, jwt
 
 
-
 class PassCrypt:
     pwd_context: CryptContext
 
@@ -25,7 +24,7 @@ class PassCrypt:
 class AuthToken(PassCrypt):
     SECRET_KEY: str
     ALGORITHM: str
-    
+
     # constructor
     def __init__(
         self, init_key: str | None = None, init_algorithm: str = "HS512"
@@ -37,7 +36,7 @@ class AuthToken(PassCrypt):
         self.ALGORITHM = init_algorithm
         assert self.ALGORITHM, "MISSED ALGORITHM"
         super().__init__()
-    
+
     # JWT operation
     def encode_jwt(self, to_encode) -> str:
         return jwt.encode(to_encode, self.SECRET_KEY, algorithm=self.ALGORITHM)
@@ -65,11 +64,10 @@ class AuthToken(PassCrypt):
         to_encode.update(
             {"iat": datetime.utcnow(), "exp": expire, "scope": "access_token"}
         )
-        encoded_access_token = self.encode_jwt(to_encode) 
+        encoded_access_token = self.encode_jwt(to_encode)
         return encoded_access_token
-    
 
-    async def decode_access_token(self, access_token: str):
+    async def decode_access_token(self, access_token: str) -> str | None:
         try:
             payload = jwt.decode(
                 access_token, self.SECRET_KEY, algorithms=[self.ALGORITHM]

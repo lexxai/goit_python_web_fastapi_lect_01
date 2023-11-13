@@ -1,10 +1,5 @@
-from datetime import datetime
-from enum import Enum
-from typing import Any, Optional, Annotated
-from fastapi import Form
-
 from pydantic import BaseModel, Field, EmailStr
-from sqlalchemy import Column, String
+
 
 from src.database.models import Role
 
@@ -21,14 +16,13 @@ class AccessTokenResponse(BaseModel):
 
 
 class UserModel(BaseModel):
-    username: str = Field(min_length=6, max_length=150)
+    username: str = Field(min_length=2, max_length=150)
     email: EmailStr
     password: str = Field(min_length=6, max_length=32)
 
 
 class NewUserResponse(BaseModel):
     username: str
-
 
 
 class UserResponse(BaseModel):

@@ -118,7 +118,7 @@ async def get_current_user_dbtoken(
                 refresh_token
             )
             user = await repository_users.get_user_by_email(str(email), db)
-            print(f"refresh_access_token {email=} {user.email} {user.refresh_token}")  # type: ignore
+            # print(f"refresh_access_token {email=} {user.email} {user.refresh_token}")  # type: ignore
             if refresh_token == user.refresh_token:  # type: ignore
                 result = await refresh_access_token(refresh_token)
                 print(f"refresh_access_token  {result=}")
