@@ -24,6 +24,8 @@ get_cats = async () => {
       el.innerHTML = `ID: ${cat?.id} Name: <strong>${cat?.nickname}</strong> Status: ${cat?.vaccinated} Owner: ${cat?.owner.email}`;
       cats.appendChild(el);
     }
+  }else if  (response.status == 401) {
+    window.location = "index.html"
   }
 };
 
@@ -45,6 +47,8 @@ get_owners = async () => {
       el.innerHTML = `ID: ${owner?.id} Email: <strong>${owner?.email}</strong>`;
       owners.appendChild(el);
     }
+  }else if  (response.status == 401) {
+    window.location = "index.html"
   }
 };
 
@@ -65,6 +69,8 @@ ownerCreate.addEventListener("submit", async (e) => {
   if (response.status == 201) {
     ownerCreate.reset();
     get_owners();
+  }else if  (response.status == 401) {
+    window.location = "index.html"
   }
 });
 
