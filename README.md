@@ -95,6 +95,13 @@ After wrong refresh_token used, refresh_token in DB cleared
 ### Docs
 ![index](doc/static-client-04.png)
 
+## Client Js FETCH ERROR AND REFRESH TOKEN
+### First success REFRESH TOKEN and relaod data of cats
+![index](doc/static-client-05-reauth.png)
+
+### Limit of bad try REFRESH TOKEN by calling himself and redirect to login page if fail.
+![index](doc/static-client-06-try-bad-reauth.png)
+
 ## DOCKER
 ### .env
 ```
