@@ -11,6 +11,8 @@
 - access with token:
 ![auth-01](doc/auth-01.png)
 
+### OAuth2
+
 - get_token/login by oauth2 form:
 ![auth-02](doc/auth-04.png)
 
@@ -22,6 +24,8 @@
 
 - access with token:
 ![auth-02](doc/auth-07.png)
+
+### OAuth2 + refresh
 
 - get_token/login by oauth2 form with refresh:
 ![auth-02](doc/auth-08.png)
@@ -39,6 +43,64 @@
 ![auth-02](doc/auth-12.png)
 
 
+## REAUTH BY REFRESH_TOKEN in COOKIES
+Define cookie for refresh_token
+![auth-cookies](doc/auth-13-cookies.png)
+
+Auth using a refresh_token (cookie) sicne access_token has expired and get a new access_token, and the client side should save and use its new new_access_token as the next access_token
+![auth show new token](doc/auth-14-new_a_token.png)
+
+Next auth with use new access_token as access_token
+![auth with new token](doc/auth-15-use_new_a_token.png)
+
+Auth using a refresh_token (cookie) and check on saved DB, sicne access_token has expired and get a new access_token, and the client side should save and use its new new_access_token as the next access_token
+![auth show new token](doc/auth-16-chek_token_db.png)
+
+### USE REFRESH_TOKEN in COOKIES + REFRESH_TOKEN IN DB 
+
+Set changed in DB
+![auth show new token](doc/auth-17-token_db-other.png)
+
+Now rigth refresh_token by sign not aceeped, since not same as DB
+![auth show new token](doc/auth-18-token_db-other-deny.png)
+
+After wrong refresh_token used, refresh_token in DB cleared
+![auth show new token](doc/auth-19-token_db-cleared.png)
+
+
+### GRAVATAR LINK
+![auth GRAVATAR](doc/auth-20-gravatar.png)
+
+
+## JavaSript Client
+### Login
+![login](doc/js-clien-01-login.png)
+
+### Auth token local storage
+![ Auth token local storage](doc/js-clien-03-token-storage.png)
+
+### List cats and owners
+![List cats and owners](doc/js-clien-02-list.png)
+
+## Owner create
+![Owner create](doc/js-clien-04-form.png)
+
+## Client Js FastAPI Static
+### Index
+![index](doc/static-client-01.png)
+### Login
+![index](doc/static-client-02.png)
+### List 
+![index](doc/static-client-03.png)
+### Docs
+![index](doc/static-client-04.png)
+
+## Client Js FETCH ERROR AND REFRESH TOKEN
+### First success REFRESH TOKEN and relaod data of cats
+![index](doc/static-client-05-reauth.png)
+
+### Limit of bad try REFRESH TOKEN by calling himself and redirect to login page if fail.
+![index](doc/static-client-06-try-bad-reauth.png)
 
 ## DOCKER
 ### .env

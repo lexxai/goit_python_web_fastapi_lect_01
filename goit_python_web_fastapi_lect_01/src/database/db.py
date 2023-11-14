@@ -20,7 +20,7 @@ if not domain:
     ENV_FILE = Path(__file__).resolve().parent.parent.parent.parent.joinpath(".env")
     load_dotenv(ENV_FILE)
     domain = environ.get("POSTGRES_HOST")
-    print(f"{ENV_FILE=} {domain=}")
+    # print(f"{ENV_FILE=} {domain=}")
 
     username = environ.get("POSTGRES_USERNAME")
     password = environ.get("POSTGRES_PASSWORD")
@@ -64,7 +64,7 @@ def get_db():
     try:
         yield db
     except SQLAlchemyError as err:
-        print(err)
+        print("SQLAlchemyError:", err)
         db.rollback()
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(err)) 
     finally:

@@ -11,14 +11,15 @@ from sqlalchemy.orm import Session
 from src.database.db import get_db
 from src.database.models import User
 
-from src.shemas import AccessTokenResponse, NewUserResponse
-from src.repository import authLib as repository_auth
-from src.shemas import UserModel
+from src.shemas.users import AccessTokenResponse, NewUserResponse
+from src.shemas.users import UserModel
 
-from src.repository.authLib import authLib, AUTH_LIB
+from src.repository.auth import auth_oauth2 as repository_auth
+from src.auth import auth_oauth2 as authLib
 
 
 router = APIRouter(prefix="", tags=["Auth"])
+
 security = HTTPBearer()
 
 
@@ -63,30 +64,3 @@ async def login(
 async def read_item(current_user: User = Depends(authLib.get_current_user)):
     return {"message": "secret router", "owner": current_user.email}
 
-
-if AUTH_LIB == "OAuth2REfresh":
-
-    @router.get("/refresh_token")
-    async def refresh_token(
-        credentials: HTTPAuthorizationCredentials = Security(security),
-        db: Session = Depends(get_db),
-    ):
-        token: str = credentials.credentials
-        email = await authLib.get_email_form_refresh_token(token)
-        user = db.query(User).filter(User.email == email).first()
-        if str(user.refresh_token) != token:
-            user.refresh_token = None
-            db.commit()
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid refresh token"
-            )
-
-        access_token = await authLib.create_access_token(data={"sub": email})
-        refresh_token = await authLib.create_refresh_token(data={"sub": email})
-        user.refresh_token = refresh_token
-        db.commit()
-        return {
-            "access_token": access_token,
-            "refresh_token": refresh_token,
-            "token_type": "bearer",
-        }

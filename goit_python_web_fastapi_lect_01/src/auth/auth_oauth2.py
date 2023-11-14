@@ -16,10 +16,14 @@ from starlette import status
 try:
     from src.database.db import get_db
     from src.database.models import User
+    from src.shemas.users import UserModel
+    from src.shemas.auth import AccessTokenRefreshResponse, AccessTokenResponse
 except ImportError:
     sys.path.append(str(pathlib.Path(__file__).resolve().parent.parent))
     from database.db import get_db
     from database.models import User
+    from shemas.users import UserModel
+    from shemas.auth import AccessTokenRefreshResponse, AccessTokenResponse
 
 
 class Hash:
@@ -40,6 +44,7 @@ ALGORITHM = "HS512"
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/login")
 
 auth_response_model = OAuth2PasswordRequestForm
+auth_answer_model = AccessTokenResponse
 
 
 # define a function to generate a new access token
@@ -89,4 +94,4 @@ async def create_refresh_token(
     return None
 
 
-print("Auth OAuth2 Lib")
+# print("Auth OAuth2 Lib")

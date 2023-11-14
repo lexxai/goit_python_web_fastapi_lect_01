@@ -3,6 +3,7 @@ from fastapi import FastAPI, Path, Query, Depends, HTTPException, Request, statu
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 
 from sqlalchemy import text
@@ -10,17 +11,31 @@ from sqlalchemy.orm import Session
 
 
 from src.database.db import get_db
-from src.routes import cats, owners, auth
+from src.routes import cats, owners
+from src.routes.auth import auth
+# from src.routes.auth import auth_simple, auth_oauth2, auth_oauth2refresh, 
+from src.conf.auth import AUTH_LIB
 
 
 app = FastAPI()
 
+origins = [ 
+    "http://localhost:3000"
+    ]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
-
 templates = Jinja2Templates(directory="templates")
 
-PUBLIC_APP = True
+
+
 
 
 @app.middleware("http")
@@ -57,7 +72,16 @@ def healthchecker(db: Session = Depends(get_db)):
         )
 
 
-app.include_router(auth.router, prefix="")
+# print(f"{AUTH_LIB=}")
+# if AUTH_LIB == "Simple":
+#     app.include_router(auth_simple.router, prefix="/api/auth")
+# elif AUTH_LIB == "OAuth2REfresh":
+#     app.include_router(auth_oauth2refresh.router, prefix="/api/auth")
+# else:
+#     app.include_router(auth_oauth2.router, prefix="/api/auth")
+
+app.include_router(auth.router, prefix="/api/auth")
+
 app.include_router(owners.router, prefix="/api")
 app.include_router(cats.router, prefix="/api")
 

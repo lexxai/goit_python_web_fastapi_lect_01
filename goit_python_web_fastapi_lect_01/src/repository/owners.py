@@ -1,7 +1,7 @@
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 
-from src.shemas import OwnerModel
+from src.shemas.owner import OwnerModel
 from src.database.models import Owner
 
 
@@ -50,7 +50,7 @@ async def update(owner_id: int, body: OwnerModel, db: Session):
     try:
         owner = await get_owner_by_id(owner_id, db)
         if owner:
-            owner.email = body.email
+            owner.email = body.email    # type: ignore
             db.commit()
     except Exception as err:
         print("ERROR: db.query update")    
