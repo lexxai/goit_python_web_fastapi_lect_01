@@ -20,7 +20,7 @@ class Auth(AuthToken):
     token_response_model = AccessTokenRefreshResponse
 
     # define a function to generate a new refresh token
-    async def create_refresh_token(self, data: dict, expires_delta: Optional[float] = None) -> tuple[str, datetime]:
+    def create_refresh_token(self, data: dict, expires_delta: Optional[float] = None) -> tuple[str, datetime]:
         to_encode = data.copy()
         if expires_delta:
             expire = datetime.utcnow() + timedelta(seconds=expires_delta)
@@ -31,7 +31,7 @@ class Auth(AuthToken):
         encoded_refresh_token = jwt.encode(to_encode, self.SECRET_KEY, algorithm=self.ALGORITHM)
         return encoded_refresh_token, expire
 
-    async def decode_refresh_token(self, refresh_token: str):
+    def decode_refresh_token(self, refresh_token: str):
         try:
             payload = jwt.decode(refresh_token, self.SECRET_KEY, algorithms=[self.ALGORITHM])
             if payload["scope"] == "refresh_token":
@@ -58,7 +58,7 @@ class Auth(AuthToken):
         encoded_token = jwt.encode(to_encode, self.SECRET_KEY, algorithm=self.ALGORITHM)
         return encoded_token
 
-    async def get_email_from_token(self, token: str) -> str | None:
+    def get_email_from_token(self, token: str) -> str | None:
         try:
             payload = jwt.decode(token, self.SECRET_KEY, algorithms=[self.ALGORITHM])
             if payload and payload["scope"] == "email_token":

@@ -52,14 +52,14 @@ async def login(
             "detail": "Invalid credentianal",
         }
         raise HTTPException(**exception_data)
-    if not bool(user.confirmed): 
+    if not bool(user.confirmed):
         exception_data = {
             "status_code": status.HTTP_401_UNAUTHORIZED,
             "detail": "Not confirmed",
         }
         raise HTTPException(**exception_data)
 
-    token = await repository_auth.login(user=user, password=body.password, db=db)
+    token = repository_auth.login(user=user, password=body.password, db=db)
     if token is None:
         exception_data = {
             "status_code": status.HTTP_401_UNAUTHORIZED,
@@ -176,11 +176,11 @@ async def get_current_user_dbtoken(
     if token:
         user = await repository_auth.a_get_current_user(token, db)
         if not user and refresh_token:
-            email = await auth_service.decode_refresh_token(refresh_token)
+            email = auth_service.decode_refresh_token(refresh_token)
             user = await repository_users.get_user_by_email(str(email), db)
             # print(f"refresh_access_token {email=} {user.email} {user.refresh_token}")  # type: ignore
             if refresh_token == user.refresh_token:  # type: ignore
-                result = await refresh_access_token(refresh_token)
+                result = refresh_access_token(refresh_token)
                 print(f"refresh_access_token  {result=}")
                 if result:
                     new_access_token = result.get("access_token")
@@ -218,14 +218,11 @@ async def read_item_dbtoken(current_user: User = Depends(get_current_user_dbtoke
     return {"message": "secret router", "owner": auth_result}
 
 
-async def refresh_access_token(refresh_token: str) -> dict[str, Any] | None:
+def refresh_access_token(refresh_token: str) -> dict[str, Any] | None:
     if refresh_token:
-        email = await auth_service.decode_refresh_token(refresh_token)
+        email = auth_service.decode_refresh_token(refresh_token)
         if email:
-            (
-                access_token,
-                expire_token,
-            ) = await auth_service.create_access_token(data={"sub": email})
+            access_token, expire_token = auth_service.create_access_token(data={"sub": email})
             return {
                 "access_token": access_token,
                 "expire_token": expire_token,
@@ -245,7 +242,7 @@ async def refresh_token(
     print(f"refresh_token {token=}")
     if not token and refresh_token:
         token = refresh_token
-    email = await auth_service.decode_refresh_token(token)
+    email = auth_service.decode_refresh_token(token)
     print(f"refresh_token {email=}")
     user: User | None = await repository_users.get_user_by_email(email, db)
     if user and user.refresh_token != token:  # type: ignore
@@ -300,7 +297,7 @@ async def refresh_token(
 
 @router.get("/confirmed_email/{token}")
 async def confirmed_email(token: str, db: Session = Depends(get_db)):
-    email = await auth_service.get_email_from_token(token)
+    email = auth_service.get_email_from_token(token)
     if email:
         user = await repository_users.get_user_by_email(email, db)
         if user:

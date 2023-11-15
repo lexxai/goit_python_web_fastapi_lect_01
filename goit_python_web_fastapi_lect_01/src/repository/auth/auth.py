@@ -36,15 +36,15 @@ async def signup(body, db: Session):
     return new_user
 
 
-async def login(user: User, password: str, db: Session):
+def login(user: User, password: str, db: Session):
     if user is None:
         return None
     if not auth_service.verify_password(password, user.password):
         return None
     # Generate JWT
-    access_token, expire_token = await auth_service.create_access_token(data={"sub": user.email})
+    access_token, expire_token = auth_service.create_access_token(data={"sub": user.email})
     token = {"access_token": access_token, "token_type": "bearer", "expire_access_token": expire_token}
-    refresh_token, expire_token = await auth_service.create_refresh_token(data={"sub": user.email})
+    refresh_token, expire_token = auth_service.create_refresh_token(data={"sub": user.email})
     token.update({"refresh_token": refresh_token, "expire_refresh_token": expire_token})
     return token
 

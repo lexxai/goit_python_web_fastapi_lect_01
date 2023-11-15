@@ -53,7 +53,7 @@ class AuthToken(PassCrypt):
         return None
 
     # define a function to generate a new access token
-    async def create_access_token(
+    def create_access_token(
         self, data: dict, expires_delta: Optional[float] = None
     ) -> tuple[str,datetime]:
         to_encode = data.copy()
@@ -68,7 +68,7 @@ class AuthToken(PassCrypt):
         encoded_access_token = self.encode_jwt(to_encode)
         return encoded_access_token, expire
 
-    async def decode_access_token(self, access_token: str) -> str | None:
+    def decode_access_token(self, access_token: str) -> str | None:
         try:
             payload = jwt.decode(
                 access_token, self.SECRET_KEY, algorithms=[self.ALGORITHM]
