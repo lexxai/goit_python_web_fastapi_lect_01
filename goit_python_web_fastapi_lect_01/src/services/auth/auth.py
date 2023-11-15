@@ -56,8 +56,9 @@ class Auth(AuthToken):
             )
 
     def create_email_token(
-        self, to_encode: dict, expires_delta: Optional[float] = None
+        self, data: dict, expires_delta: Optional[float] = None
     ) -> str | None:
+        to_encode = data.copy()
         if expires_delta:
             expire = datetime.utcnow() + timedelta(seconds=expires_delta)
         else:

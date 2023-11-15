@@ -1,20 +1,12 @@
 from typing import Annotated, Any, List
-from fastapi import (
-    APIRouter,
-    Depends,
-    HTTPException,
-    Request,
-    Response,
-    Security,
-    status,
-    Cookie,
-)
+from fastapi import APIRouter, Depends, HTTPException, Request, Response, Security, status, Cookie, BackgroundTasks
 from fastapi.security import (
     HTTPAuthorizationCredentials,
     HTTPBasicCredentials,
     HTTPBearer,
 )
 from sqlalchemy.orm import Session
+from src.services.emails import send_email
 
 from src.database.db import get_db
 from src.database.models import User
@@ -37,13 +29,12 @@ SET_COOKIES = False
     response_model_exclude_none=True,
     status_code=status.HTTP_201_CREATED,
 )
-async def signup(body: UserModel, db: Session = Depends(get_db)):
+async def signup(body: UserModel, background_tasks: BackgroundTasks, request: Request, db: Session = Depends(get_db)):
     new_user = await repository_auth.signup(body=body, db=db)
     if new_user is None:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT, detail="Account already exists"
-        )
-    return new_user
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Account already exists")
+    background_tasks.add_task(send_email, str(new_user.email), str(new_user.username), str(request.base_url))
+    return {"user": new_user, "detail": "User successfully created. Check your email for confirmation."}
 
 
 # Annotated[OAuth2PasswordRequestForm, Depends()]
@@ -51,12 +42,25 @@ async def signup(body: UserModel, db: Session = Depends(get_db)):
 @router.post("/login", response_model=auth_service.token_response_model)
 async def login(
     response: Response,
-    body: Annotated[ auth_service.auth_response_model, Depends()],  # type: ignore
+    body: Annotated[auth_service.auth_response_model, Depends()],  # type: ignore
     db: Session = Depends(get_db),
 ):
-    token = await repository_auth.login(
-        username=body.username, password=body.password, db=db
-    )
+    user = await repository_users.get_user_by_name(body.username, db)
+    if user is None:
+        exception_data = {
+            "status_code": status.HTTP_401_UNAUTHORIZED,
+            "detail": "Invalid credentianal",
+        }
+        raise HTTPException(**exception_data)
+    if not bool(user.confirmed):
+        exception_data = {
+            "status_code": status.HTTP_401_UNAUTHORIZED,
+            "detail": "Not confirmed",
+        }
+        raise HTTPException(**exception_data)
+
+
+    token = await repository_auth.login(user=user, password=body.password, db=db)
     if token is None:
         exception_data = {
             "status_code": status.HTTP_401_UNAUTHORIZED,
@@ -74,9 +78,7 @@ async def login(
         raise HTTPException(**exception_data)
     refresh_token = token.get("refresh_token")
     if refresh_token:
-        await repository_auth.update_refresh_token(
-            username=body.username, refresh_token=refresh_token, db=db
-        )
+        await repository_auth.update_refresh_token(username=body.username, refresh_token=refresh_token, db=db)
     new_access_token = token.get("access_token")
     if SET_COOKIES:
         if new_access_token:
@@ -146,9 +148,7 @@ async def get_current_user(
                             expires=result.get("expire_token"),
                         )
                     else:
-                        response.delete_cookie(
-                            key="access_token", httponly=True, path="/api/"
-                        )
+                        response.delete_cookie(key="access_token", httponly=True, path="/api/")
     if user is None:
         raise credentials_exception
     return user
@@ -177,9 +177,7 @@ async def get_current_user_dbtoken(
     if token:
         user = await repository_auth.a_get_current_user(token, db)
         if not user and refresh_token:
-            email = await auth_service.decode_refresh_token(
-                refresh_token
-            )
+            email = await auth_service.decode_refresh_token(refresh_token)
             user = await repository_users.get_user_by_email(str(email), db)
             # print(f"refresh_access_token {email=} {user.email} {user.refresh_token}")  # type: ignore
             if refresh_token == user.refresh_token:  # type: ignore
@@ -199,9 +197,7 @@ async def get_current_user_dbtoken(
                                 expires=result.get("expire_token"),
                             )
                         else:
-                            response.delete_cookie(
-                                key="access_token", httponly=True, path="/api/"
-                            )
+                            response.delete_cookie(key="access_token", httponly=True, path="/api/")
             else:
                 await repository_users.update_user_refresh_token(user, "", db)
                 response.delete_cookie(key="refresh_token", httponly=True, path="/api/")
@@ -230,9 +226,7 @@ async def refresh_access_token(refresh_token: str) -> dict[str, Any] | None:
             (
                 access_token,
                 expire_token,
-            ) = await auth_service.create_access_token(
-                data={"sub": email}
-            )
+            ) = await auth_service.create_access_token(data={"sub": email})
             return {
                 "access_token": access_token,
                 "expire_token": expire_token,

@@ -25,7 +25,6 @@ async def a_get_current_user(token: str|None, db: Session) -> User | None:
 async def signup(body, db: Session):
     try:
         user = await repository_users.get_user_by_name(body.username, db)
-        user = await repository_users.get_user_by_name(body.username, db)
         if user is not None:
             return None
         body.password = auth_service.get_password_hash(body.password)
@@ -37,8 +36,7 @@ async def signup(body, db: Session):
     return new_user
 
 
-async def login(username: str, password: str, db: Session):
-    user = await repository_users.get_user_by_name(username, db)
+async def login(user: User, password: str, db: Session):
     if user is None:
         return None
     if not auth_service.verify_password(password, user.password):
