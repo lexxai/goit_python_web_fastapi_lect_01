@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta, timezone
-from typing import Optional
+from typing import Any, Optional
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
@@ -73,6 +73,18 @@ class Auth(AuthToken):
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Could not validate credentials",
             )
+        
+    def refresh_access_token(self, refresh_token: str) -> dict[str, Any] | None:
+        if refresh_token:
+            email = self.decode_refresh_token(refresh_token)
+            if email:
+                access_token, expire_token = self.create_access_token(data={"sub": email})
+                return {
+                    "access_token": access_token,
+                    "expire_token": expire_token,
+                    "email": email,
+            }
+        return None
 
 
 auth_service = Auth()
