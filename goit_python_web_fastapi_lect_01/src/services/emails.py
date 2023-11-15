@@ -2,8 +2,6 @@ from pathlib import Path
 from os import environ
 from dotenv import load_dotenv
 
-load_dotenv()
-
 import uvicorn
 from fastapi import FastAPI, BackgroundTasks
 from fastapi_mail import FastMail, MessageSchema, ConnectionConfig, MessageType
@@ -14,9 +12,12 @@ from src.services.auth.auth import auth_service
 
 class EmailSchema(BaseModel):
     email: EmailStr
+    fullname: str = "Sender Name"
+    subject: str = "Sender Subject topic"
 
 
-
+if not environ.get("MAIL_USERNAME"):
+    load_dotenv()
 
 assert environ.get("MAIL_USERNAME") is not None, "Check ENVIROMENTS of file .env"
 
@@ -36,25 +37,26 @@ conf = ConnectionConfig(
 
 app = FastAPI()
 
+print(conf.MAIL_PASSWORD)
 
 @app.post("/send-email")
 async def send_in_background(background_tasks: BackgroundTasks, body: EmailSchema):
     message = MessageSchema(
-        subject="Fastapi mail module",
+        subject=body.subject,
         recipients=[body.email],
-        template_body={"fullname": "Billy Jones"},
+        template_body={"fullname": body.fullname},
         subtype=MessageType.html
     )
-
+    print(message)
     fm = FastMail(conf)
 
-    background_tasks.add_task(fm.send_message, message, template_name="example_email.html")
+    background_tasks.add_task(fm.send_message, message, template_name="cats_email.html")
 
-    return {"message": "email has been sent"}
+    return {"message": "email has been set to sending query"}
 
 
 if __name__ == '__main__':
-    uvicorn.run('main:app', port=8000, reload=True)
+    uvicorn.run('emails:app', port=9090, reload=True)
 
 
 

@@ -102,6 +102,13 @@ After wrong refresh_token used, refresh_token in DB cleared
 ### Limit of bad try REFRESH TOKEN by calling himself and redirect to login page if fail.
 ![index](doc/static-client-06-try-bad-reauth.png)
 
+
+## SEND EMAIL
+### API
+![index](doc/email-01.png)
+### WEBMAIL
+![index](doc/email-02.png)
+
 ## DOCKER
 ### .env
 ```
