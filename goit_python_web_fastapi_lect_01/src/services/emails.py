@@ -15,7 +15,7 @@ class EmailSchema(BaseModel):
 
 async def send_email(email: str, username: str, host: str):
     try:
-        token_verification = auth_service.create_email_token({"sub:": email})
+        token_verification = auth_service.create_email_token({"sub": email})
         message = MessageSchema(
             subject="Confirm your email",
             recipients=[email],
@@ -29,7 +29,7 @@ async def send_email(email: str, username: str, host: str):
         print(message)
 
         fm = FastMail(conf)
-        await fm.send_message(message, template_name="cats_email.html")
+        await fm.send_message(message, template_name="confirm_email.html")
     except ConnectionError as err:
         print(err)
         return None

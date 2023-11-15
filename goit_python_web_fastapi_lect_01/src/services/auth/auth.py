@@ -20,28 +20,20 @@ class Auth(AuthToken):
     token_response_model = AccessTokenRefreshResponse
 
     # define a function to generate a new refresh token
-    async def create_refresh_token(
-        self, data: dict, expires_delta: Optional[float] = None
-    ) -> tuple[str, datetime]:
+    async def create_refresh_token(self, data: dict, expires_delta: Optional[float] = None) -> tuple[str, datetime]:
         to_encode = data.copy()
         if expires_delta:
             expire = datetime.utcnow() + timedelta(seconds=expires_delta)
         else:
             expire = datetime.utcnow() + timedelta(days=7)
         expire = expire.replace(tzinfo=timezone.utc)
-        to_encode.update(
-            {"iat": datetime.utcnow(), "exp": expire, "scope": "refresh_token"}
-        )
-        encoded_refresh_token = jwt.encode(
-            to_encode, self.SECRET_KEY, algorithm=self.ALGORITHM
-        )
+        to_encode.update({"iat": datetime.utcnow(), "exp": expire, "scope": "refresh_token"})
+        encoded_refresh_token = jwt.encode(to_encode, self.SECRET_KEY, algorithm=self.ALGORITHM)
         return encoded_refresh_token, expire
 
     async def decode_refresh_token(self, refresh_token: str):
         try:
-            payload = jwt.decode(
-                refresh_token, self.SECRET_KEY, algorithms=[self.ALGORITHM]
-            )
+            payload = jwt.decode(refresh_token, self.SECRET_KEY, algorithms=[self.ALGORITHM])
             if payload["scope"] == "refresh_token":
                 email = payload["sub"]
                 return email
@@ -55,20 +47,32 @@ class Auth(AuthToken):
                 detail="Could not validate credentials",
             )
 
-    def create_email_token(
-        self, data: dict, expires_delta: Optional[float] = None
-    ) -> str | None:
+    def create_email_token(self, data: dict, expires_delta: Optional[float] = None) -> str | None:
         to_encode = data.copy()
         if expires_delta:
             expire = datetime.utcnow() + timedelta(seconds=expires_delta)
         else:
             expire = datetime.utcnow() + timedelta(days=7)
         expire = expire.replace(tzinfo=timezone.utc)
-        to_encode.update(
-            {"iat": datetime.utcnow(), "exp": expire, "scope": "email_token"}
-        )
+        to_encode.update({"iat": datetime.utcnow(), "exp": expire, "scope": "email_token"})
         encoded_token = jwt.encode(to_encode, self.SECRET_KEY, algorithm=self.ALGORITHM)
         return encoded_token
+
+    async def get_email_from_token(self, token: str) -> str | None:
+        try:
+            payload = jwt.decode(token, self.SECRET_KEY, algorithms=[self.ALGORITHM])
+            if payload and payload["scope"] == "email_token":
+                email = payload.get("sub")
+                return email
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid scope for token",
+            )
+        except JWTError:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Could not validate credentials",
+            )
 
 
 auth_service = Auth()
