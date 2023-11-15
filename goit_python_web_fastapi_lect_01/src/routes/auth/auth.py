@@ -45,14 +45,14 @@ async def login(
     body: Annotated[auth_service.auth_response_model, Depends()],  # type: ignore
     db: Session = Depends(get_db),
 ):
-    user = await repository_users.get_user_by_name(body.username, db)
+    user = await repository_users.get_user_by_email(body.username, db)
     if user is None:
         exception_data = {
             "status_code": status.HTTP_401_UNAUTHORIZED,
             "detail": "Invalid credentianal",
         }
         raise HTTPException(**exception_data)
-    if not bool(user.confirmed):
+    if not bool(user.confirmed): 
         exception_data = {
             "status_code": status.HTTP_401_UNAUTHORIZED,
             "detail": "Not confirmed",

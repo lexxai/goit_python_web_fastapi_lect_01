@@ -108,6 +108,15 @@ After wrong refresh_token used, refresh_token in DB cleared
 ![index](doc/email-01.png)
 ### WEBMAIL
 ![index](doc/email-02.png)
+### Sign up
+![index](doc/email-02a.png)
+### WEBMAIL Confirmation email
+![index](doc/email-02b.png)
+### Click confirm link
+![index](doc/email-03.png)
+### User on database changed filed confirmed
+![index](doc/email-04.png)
+
 
 ## DOCKER
 ### .env
