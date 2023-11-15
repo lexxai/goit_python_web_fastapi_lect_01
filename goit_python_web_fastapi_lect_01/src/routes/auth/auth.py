@@ -10,7 +10,7 @@ from src.services.emails import send_email
 
 from src.database.db import get_db
 from src.database.models import User
-from src.shemas.users import UserResponse, UserModel
+from src.shemas.users import UserDetailResponse, UserModel
 from src.repository.auth import auth as repository_auth
 from src.services.auth.auth import auth_service, Auth
 from src.repository import users as repository_users
@@ -25,7 +25,7 @@ SET_COOKIES = False
 
 @router.post(
     "/signup",
-    response_model=UserResponse,
+    response_model=UserDetailResponse,
     response_model_exclude_none=True,
     status_code=status.HTTP_201_CREATED,
 )
