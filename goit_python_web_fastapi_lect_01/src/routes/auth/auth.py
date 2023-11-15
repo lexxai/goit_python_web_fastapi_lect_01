@@ -292,9 +292,8 @@ async def confirmed_email(token: str, db: Session = Depends(get_db)):
 async def request_email(body: RequestEmail, background_tasks: BackgroundTasks, request: Request,
                         db: Session = Depends(get_db)):
     user = await repository_users.get_user_by_email(body.email, db)
-
-    if bool(user) and bool(user.confirmed):
-        return {"message": "Your email is already confirmed"}
     if user:
+        if bool(user.confirmed):
+                return {"message": "Your email is already confirmed"}
         background_tasks.add_task(send_email, str(user.email), str(user.username), str(request.base_url))
     return {"message": "Check your email for confirmation."}
