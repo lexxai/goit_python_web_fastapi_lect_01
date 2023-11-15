@@ -10,6 +10,7 @@ from typing import List
 
 from src.services.auth.auth import auth_service
 
+
 class EmailSchema(BaseModel):
     email: EmailStr
     fullname: str = "Sender Name"
@@ -39,25 +40,55 @@ app = FastAPI()
 
 print(conf.MAIL_PASSWORD)
 
-@app.post("/send-email")
-async def send_in_background(background_tasks: BackgroundTasks, body: EmailSchema):
-    message = MessageSchema(
-        subject=body.subject,
-        recipients=[body.email],
-        template_body={"fullname": body.fullname},
-        subtype=MessageType.html
-    )
-    print(message)
-    fm = FastMail(conf)
 
-    background_tasks.add_task(fm.send_message, message, template_name="cats_email.html")
+@app.post("/send-email")
+async def send_email(background_tasks: BackgroundTasks, email: EmailSchema):
+    try:       
+
+        token_verification = auth_service.create_email_token({"sub:": email})
+
+        message = MessageSchema(
+            subject=body.subject,
+            recipients=[body.email],
+            template_body={"fullname": body.fullname},
+            subtype=MessageType.html,
+        )
+        print(message)
+        fm = FastMail(conf)
+
+        background_tasks.add_task(
+            fm.send_message, message, template_name="cats_email.html"
+        )
+
+    except:
+        ...
 
     return {"message": "email has been set to sending query"}
 
 
-if __name__ == '__main__':
-    uvicorn.run('emails:app', port=9090, reload=True)
 
 
+@app.post("/send_in_background")
+async def send_in_background(background_tasks: BackgroundTasks, body: EmailSchema):
+    try:       
+        message = MessageSchema(
+            subject=body.subject,
+            recipients=[body.email],
+            template_body={"fullname": body.fullname},
+            subtype=MessageType.html,
+        )
+        print(message)
+        fm = FastMail(conf)
+
+        background_tasks.add_task(
+            fm.send_message, message, template_name="cats_email.html"
+        )
+
+    except:
+        ...
+
+    return {"message": "email has been set to sending query"}
 
 
+if __name__ == "__main__":
+    uvicorn.run("emails:app", port=9090, reload=True)

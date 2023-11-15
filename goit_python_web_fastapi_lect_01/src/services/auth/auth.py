@@ -7,7 +7,6 @@ from sqlalchemy.orm import Session
 from jose import JWTError, jwt
 
 
-
 from src.database.db import get_db
 from src.database.models import User
 from .auth_token import AuthToken
@@ -16,12 +15,10 @@ from src.shemas.auth import AccessTokenRefreshResponse
 
 
 class Auth(AuthToken):
-        
     auth_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
     auth_response_model = OAuth2PasswordRequestForm
     token_response_model = AccessTokenRefreshResponse
 
-    
     # define a function to generate a new refresh token
     async def create_refresh_token(
         self, data: dict, expires_delta: Optional[float] = None
@@ -57,7 +54,20 @@ class Auth(AuthToken):
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Could not validate credentials",
             )
-        
+
+    def create_email_token(
+        self, to_encode: dict, expires_delta: Optional[float] = None
+    ) -> str | None:
+        if expires_delta:
+            expire = datetime.utcnow() + timedelta(seconds=expires_delta)
+        else:
+            expire = datetime.utcnow() + timedelta(days=7)
+        expire = expire.replace(tzinfo=timezone.utc)
+        to_encode.update(
+            {"iat": datetime.utcnow(), "exp": expire, "scope": "email_token"}
+        )
+        encoded_token = jwt.encode(to_encode, self.SECRET_KEY, algorithm=self.ALGORITHM)
+        return encoded_token
+
+
 auth_service = Auth()
-
-
