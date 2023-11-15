@@ -14,7 +14,7 @@ from src.shemas.users import UserDetailResponse, UserModel
 from src.repository.auth import auth as repository_auth
 from src.services.auth.auth import auth_service, Auth
 from src.repository import users as repository_users
-
+from src.shemas.auth import RequestEmail
 
 router = APIRouter(prefix="", tags=["Auth"])
 
@@ -286,3 +286,15 @@ async def confirmed_email(token: str, db: Session = Depends(get_db)):
             await repository_users.confirmed_email(email, db)
             return {"message": "Email confirmed"}
     raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Verification error")
+
+
+@router.post('/request_email')
+async def request_email(body: RequestEmail, background_tasks: BackgroundTasks, request: Request,
+                        db: Session = Depends(get_db)):
+    user = await repository_users.get_user_by_email(body.email, db)
+
+    if bool(user) and bool(user.confirmed):
+        return {"message": "Your email is already confirmed"}
+    if user:
+        background_tasks.add_task(send_email, str(user.email), str(user.username), str(request.base_url))
+    return {"message": "Check your email for confirmation."}
