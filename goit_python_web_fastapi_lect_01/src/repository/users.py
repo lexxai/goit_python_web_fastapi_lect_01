@@ -58,3 +58,16 @@ async def update_by_name_refresh_token(
         except Exception:
             ...
     return None
+
+
+async def confirmed_email(email: str | None, db: Session) -> bool | None:
+    if email:
+        try:
+            user = await get_user_by_email(email, db)
+            if user:
+                user.confirmed = True
+                db.commit()
+                return True
+        except Exception:
+            ...
+    return None

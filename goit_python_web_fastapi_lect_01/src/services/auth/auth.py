@@ -20,6 +20,7 @@ class Auth(AuthToken):
     auth_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
     auth_response_model = OAuth2PasswordRequestForm
     token_response_model = AccessTokenRefreshResponse
+
     
     # define a function to generate a new refresh token
     async def create_refresh_token(
@@ -57,6 +58,6 @@ class Auth(AuthToken):
                 detail="Could not validate credentials",
             )
         
-# auth_service = Auth()
+auth_service = Auth()
 
 

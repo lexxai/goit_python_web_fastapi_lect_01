@@ -20,6 +20,7 @@ from src.database.db import get_db
 from src.database.models import User
 from src.shemas.users import UserResponse, UserModel
 from src.repository.auth import auth as repository_auth
+from src.services.auth.auth import auth_service, Auth
 from src.repository import users as repository_users
 
 
@@ -47,10 +48,10 @@ async def signup(body: UserModel, db: Session = Depends(get_db)):
 
 # Annotated[OAuth2PasswordRequestForm, Depends()]
 # auth_response_model = Depends()
-@router.post("/login", response_model=repository_auth.auth_service.token_response_model)
+@router.post("/login", response_model=auth_service.token_response_model)
 async def login(
     response: Response,
-    body: Annotated[repository_auth.auth_service.auth_response_model, Depends()],
+    body: Annotated[ auth_service.auth_response_model, Depends()],  # type: ignore
     db: Session = Depends(get_db),
 ):
     token = await repository_auth.login(
@@ -88,7 +89,7 @@ async def login(
             )
         else:
             response.delete_cookie(key="access_token", httponly=True, path="/api/")
-        if new_access_token:
+        if new_access_token and refresh_token:
             print(f"{token.get('expire_refresh_token')=}")
             response.set_cookie(
                 key="refresh_token",
@@ -107,7 +108,7 @@ async def get_current_user(
     response: Response,
     access_token: Annotated[str | None, Cookie()] = None,
     refresh_token: Annotated[str | None, Cookie()] = None,
-    token: str | None = Depends(repository_auth.auth_service.auth_scheme),
+    token: str | None = Depends(auth_service.auth_scheme),
     db: Session = Depends(get_db),
 ) -> User | None:
     credentials_exception = HTTPException(
@@ -157,7 +158,7 @@ async def get_current_user_dbtoken(
     response: Response,
     access_token: Annotated[str | None, Cookie()] = None,
     refresh_token: Annotated[str | None, Cookie()] = None,
-    token: str | None = Depends(repository_auth.auth_service.auth_scheme),
+    token: str | None = Depends(auth_service.auth_scheme),
     db: Session = Depends(get_db),
 ) -> User | None:
     credentials_exception = HTTPException(
@@ -176,7 +177,7 @@ async def get_current_user_dbtoken(
     if token:
         user = await repository_auth.a_get_current_user(token, db)
         if not user and refresh_token:
-            email = await repository_auth.auth_service.decode_refresh_token(
+            email = await auth_service.decode_refresh_token(
                 refresh_token
             )
             user = await repository_users.get_user_by_email(str(email), db)
@@ -224,12 +225,12 @@ async def read_item_dbtoken(current_user: User = Depends(get_current_user_dbtoke
 
 async def refresh_access_token(refresh_token: str) -> dict[str, Any] | None:
     if refresh_token:
-        email = await repository_auth.auth_service.decode_refresh_token(refresh_token)
+        email = await auth_service.decode_refresh_token(refresh_token)
         if email:
             (
                 access_token,
                 expire_token,
-            ) = await repository_auth.auth_service.create_access_token(
+            ) = await auth_service.create_access_token(
                 data={"sub": email}
             )
             return {
@@ -251,7 +252,7 @@ async def refresh_token(
     print(f"refresh_token {token=}")
     if not token and refresh_token:
         token = refresh_token
-    email = await repository_auth.auth_service.decode_refresh_token(token)
+    email = await auth_service.decode_refresh_token(token)
     print(f"refresh_token {email=}")
     user: User | None = await repository_users.get_user_by_email(email, db)
     if user and user.refresh_token != token:  # type: ignore
@@ -268,11 +269,11 @@ async def refresh_token(
     (
         new_access_token,
         expire_access_token,
-    ) = await repository_auth.auth_service.create_access_token(data={"sub": email})
+    ) = await auth_service.create_access_token(data={"sub": email})
     (
         new_refresh_token,
         expire_refresh_token,
-    ) = await repository_auth.auth_service.create_refresh_token(data={"sub": email})
+    ) = await auth_service.create_refresh_token(data={"sub": email})
     await repository_users.update_user_refresh_token(user, new_refresh_token, db)
     if SET_COOKIES:
         if new_access_token:

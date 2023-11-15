@@ -3,13 +3,13 @@ from sqlalchemy.orm import Session
 # from fastapi import Depends
 
 from src.database.models import User
-from src.services.auth.auth import Auth
+from src.services.auth.auth import auth_service
 from src.repository import users as repository_users
 
 # from src.database.db import get_db
 
 
-auth_service = Auth()
+# auth_service = Auth()
 
 
 async def a_get_current_user(token: str|None, db: Session) -> User | None:
