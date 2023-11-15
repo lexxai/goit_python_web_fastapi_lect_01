@@ -116,6 +116,10 @@ After wrong refresh_token used, refresh_token in DB cleared
 ![index](doc/email-03.png)
 ### User on database changed filed confirmed
 ![index](doc/email-04.png)
+### User login deny before confirm by link
+![index](doc/email-05.png)
+### User login allowed after confirm by link
+![index](doc/email-06.png)
 
 
 ## DOCKER
