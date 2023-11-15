@@ -22,6 +22,54 @@ security = HTTPBearer()
 
 SET_COOKIES = False
 
+async def get_current_user(
+    response: Response,
+    access_token: Annotated[str | None, Cookie()] = None,
+    refresh_token: Annotated[str | None, Cookie()] = None,
+    token: str | None = Depends(auth_service.auth_scheme),
+    db: Session = Depends(get_db),
+) -> User | None:
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+        headers={
+            "WWW-Authenticate": "Bearer",
+            "set-cookie": response.headers.get("set-cookie", ""),
+        },
+    )
+    user = None
+    new_access_token = None
+    print(f"{access_token=}, {refresh_token=}, {token=}")
+    if not token:
+        print("used cookie access_token")
+        token = access_token
+    if token:
+        user = await repository_auth.a_get_current_user(token, db)
+        if not user and token != access_token:
+            user = await repository_auth.a_get_current_user(access_token, db)
+        if not user and refresh_token:
+            result = auth_service.refresh_access_token(refresh_token)
+            print(f"refresh_access_token  {result=}")
+            if result:
+                new_access_token = result.get("access_token")
+                email = result.get("email")
+                user = await repository_users.get_user_by_email(str(email), db)
+                if SET_COOKIES:
+                    if new_access_token:
+                        response.set_cookie(
+                            key="access_token",
+                            value=new_access_token,
+                            httponly=True,
+                            path="/api/",
+                            expires=result.get("expire_token"),
+                        )
+                    else:
+                        response.delete_cookie(key="access_token", httponly=True, path="/api/")
+    if user is None:
+        raise credentials_exception
+    return user
+
+
 
 @router.post(
     "/signup",
@@ -105,52 +153,6 @@ async def login(
     return token
 
 
-async def get_current_user(
-    response: Response,
-    access_token: Annotated[str | None, Cookie()] = None,
-    refresh_token: Annotated[str | None, Cookie()] = None,
-    token: str | None = Depends(auth_service.auth_scheme),
-    db: Session = Depends(get_db),
-) -> User | None:
-    credentials_exception = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate credentials",
-        headers={
-            "WWW-Authenticate": "Bearer",
-            "set-cookie": response.headers.get("set-cookie", ""),
-        },
-    )
-    user = None
-    new_access_token = None
-    print(f"{access_token=}, {refresh_token=}, {token=}")
-    if not token:
-        print("used cookie access_token")
-        token = access_token
-    if token:
-        user = await repository_auth.a_get_current_user(token, db)
-        if not user and token != access_token:
-            user = await repository_auth.a_get_current_user(access_token, db)
-        if not user and refresh_token:
-            result = auth_service.refresh_access_token(refresh_token)
-            print(f"refresh_access_token  {result=}")
-            if result:
-                new_access_token = result.get("access_token")
-                email = result.get("email")
-                user = await repository_users.get_user_by_email(str(email), db)
-                if SET_COOKIES:
-                    if new_access_token:
-                        response.set_cookie(
-                            key="access_token",
-                            value=new_access_token,
-                            httponly=True,
-                            path="/api/",
-                            expires=result.get("expire_token"),
-                        )
-                    else:
-                        response.delete_cookie(key="access_token", httponly=True, path="/api/")
-    if user is None:
-        raise credentials_exception
-    return user
 
 
 async def get_current_user_dbtoken(

@@ -1,3 +1,4 @@
+import pickle
 from sqlalchemy.orm import Session
 
 # from fastapi import Depends
@@ -12,13 +13,30 @@ from src.repository import users as repository_users
 # auth_service = Auth()
 
 
-async def a_get_current_user(token: str|None, db: Session) -> User | None:
+async def a_get_current_user(token: str | None, db: Session) -> User | None:
     if not token:
-        return None    
+        return None
     email = auth_service.decode_jwt(token)
     if email is None:
         return None
-    user = await repository_users.get_user_by_email(email, db)
+    try:
+        user = auth_service.r.get(f"user:{email}")
+    except Exception as err:
+        print("Error Redis read", err)
+        user = None
+    if user is None:
+        user = await repository_users.get_user_by_email(email, db)
+        if user:
+            try:
+                auth_service.r.set(f"user:{email}", pickle.dumps(user))
+                auth_service.r.expire(f"user:{email}", 900)
+                print("Save to Redis", str(user.email))
+            except Exception as err:
+                print("Error redis save", err)
+    else:
+        user = pickle.loads(user)  # type: ignore
+        print("Get from Redis", str(user.email))
+
     return user
 
 
@@ -50,6 +68,4 @@ def login(user: User, password: str, db: Session):
 
 
 async def update_refresh_token(username: str, refresh_token: str, db: Session):
-    return await repository_users.update_by_name_refresh_token(
-        username, refresh_token, db
-    )
+    return await repository_users.update_by_name_refresh_token(username, refresh_token, db)

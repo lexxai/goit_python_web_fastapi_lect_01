@@ -1,3 +1,4 @@
+import pickle
 from datetime import datetime, timedelta, timezone
 from typing import Any, Optional
 
@@ -5,7 +6,8 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from jose import JWTError, jwt
-
+import redis as redis
+from os import environ
 
 from src.database.db import get_db
 from src.database.models import User
@@ -18,6 +20,7 @@ class Auth(AuthToken):
     auth_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
     auth_response_model = OAuth2PasswordRequestForm
     token_response_model = AccessTokenRefreshResponse
+    r = redis.Redis(host=environ.get("REDIS_HOST","localhost"), port=int(environ.get("REDIS_PORT",6379)), db=0)
 
     # define a function to generate a new refresh token
     def create_refresh_token(self, data: dict, expires_delta: Optional[float] = None) -> tuple[str, datetime]:
