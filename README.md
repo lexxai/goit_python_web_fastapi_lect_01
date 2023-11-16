@@ -131,15 +131,12 @@ After wrong refresh_token used, refresh_token in DB cleared
 
 ## DOCKER
 ### .env
-```
-POSTGRES_USERNAME=postgres
-POSTGRES_PASSWORD=XXXXXXX
-POSTGRES_HOST=pg,localhost
-POSTGRES_PORT=5432
-POSTGRES_DB=fastapi
-TOKEN_SECRET_KEY="some secret"
-AUTH_LIB=OAuth2
-```
+example: doc\dot.env-example
 
 ### RUN
 docker-compose up -d code 
+
+### INSPECT HEALTH
+- docker ps
+- docker ps  -f name=web_fastapi-code-1
+- docker inspect --format='{{json .State.Health}}'  web_fastapi-code-1 
