@@ -32,6 +32,7 @@ class User(Base):
     refresh_token: str | Column[str] | None = Column(String(255), nullable=True)
     avatar: str | Column[str] | None = Column(String(255), nullable=True)
     role: Enum | Column[Enum] = Column("roles", Enum(Role), default=Role.user)
+    confirmed: bool | Column[bool] = Column(Boolean, default=False)
 
 
 class Owner(Base):

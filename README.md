@@ -102,6 +102,33 @@ After wrong refresh_token used, refresh_token in DB cleared
 ### Limit of bad try REFRESH TOKEN by calling himself and redirect to login page if fail.
 ![index](doc/static-client-06-try-bad-reauth.png)
 
+
+## SEND EMAIL
+### API
+![index](doc/email-01.png)
+### WEBMAIL
+![index](doc/email-02.png)
+### Sign up
+![index](doc/email-02a.png)
+### WEBMAIL Confirmation email
+![index](doc/email-02b.png)
+### Click confirm link
+![index](doc/email-03.png)
+### User on database changed filed confirmed
+![index](doc/email-04.png)
+### User login deny before confirm by link
+![index](doc/email-05.png)
+### User login allowed after confirm by link
+![index](doc/email-06.png)
+
+
+
+## Redis cache SQL 
+### Save to redis
+![save redis](doc/redis-02.png)
+### Get from redis
+![get redis](doc/redis-01.png)
+
 ## DOCKER
 ### .env
 ```
