@@ -122,6 +122,13 @@ After wrong refresh_token used, refresh_token in DB cleared
 ![index](doc/email-06.png)
 
 
+
+## Redis cache SQL 
+### Save to redis
+![save redis](doc/redis-02.png)
+### Get from redis
+![get redis](doc/redis-01.png)
+
 ## DOCKER
 ### .env
 ```
