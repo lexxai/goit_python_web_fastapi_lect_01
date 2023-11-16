@@ -139,4 +139,8 @@ docker-compose up -d code
 ### INSPECT HEALTH
 - docker ps
 - docker ps  -f name=web_fastapi-code-1
+```
+CONTAINER ID   IMAGE                       COMMAND                 CREATED          STATUS                      PORTS                    NAMES
+a5bfb08fe7a8   lexxai/web_fastapi:latest   "/bin/sh -c ./run.sh"   13 minutes ago   Up 13 minutes (unhealthy)   0.0.0.0:9000->9000/tcp   web_fastapi-code-1  
+```
 - docker inspect --format='{{json .State.Health}}'  web_fastapi-code-1 
