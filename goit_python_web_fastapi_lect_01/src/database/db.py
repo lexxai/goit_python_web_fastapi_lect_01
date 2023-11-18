@@ -1,29 +1,14 @@
-from configparser import ConfigParser
-from os import environ
-from pathlib import Path
-from dotenv import load_dotenv
 from fastapi import HTTPException, status
 
+from src.conf.config import settings
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.exc import SQLAlchemyError
 
-URI = None 
-domain = environ.get("POSTGRES_HOST")
-if not domain:
-    ENV_FILE = Path(__file__).resolve().parent.parent.parent.parent.joinpath(".env")
-    load_dotenv(ENV_FILE)
-username = environ.get("POSTGRES_USERNAME")
-password = environ.get("POSTGRES_PASSWORD")
-domain = environ.get("POSTGRES_HOST")
-port = environ.get("POSTGRES_PORT")
-database = environ.get("POSTGRES_DB")
-#print(f"{ENV_FILE=} {domain=} {port=}")
-if domain and port:
-    URI = f"postgresql+psycopg2://{username}:{password}@{domain}:{port}/{database}"
+# URI = f"postgresql+psycopg2://{username}:{password}@{domain}:{port}/{database}"
+# URI = "sqlite:///./sql_app.db"
 
-# SQLALCHEMY_DATABASE_URL = "sqlite:///./sql_app.db"
-# print(URI)
+URI = settings.sqlalchemy_database_url 
 SQLALCHEMY_DATABASE_URL = URI
 
 assert SQLALCHEMY_DATABASE_URL is not None, "SQLALCHEMY_DATABASE_URL UNDEFINED"

@@ -1,9 +1,8 @@
 from pathlib import Path
-from os import environ
-from dotenv import load_dotenv
-
 from fastapi_mail import FastMail, MessageSchema, ConnectionConfig, MessageType
 from pydantic import EmailStr, BaseModel
+
+from src.conf.config import settings
 from src.services.auth.auth import auth_service
 
 
@@ -36,18 +35,13 @@ async def send_email(email: str, username: str, host: str):
     return {"message": "email has been set to sending query"}
 
 
-if not environ.get("MAIL_USERNAME"):
-    load_dotenv()
-
-assert environ.get("MAIL_USERNAME") is not None, "Check ENVIROMENTS of file .env"
-
 conf = ConnectionConfig(
-    MAIL_USERNAME=environ.get("MAIL_USERNAME", ""),
-    MAIL_PASSWORD=environ.get("MAIL_PASSWORD", ""),
-    MAIL_FROM=environ.get("MAIL_FROM", environ.get("MAIL_USERNAME", "")),
-    MAIL_PORT=int(environ.get("MAIL_PORT", 465)),
-    MAIL_SERVER=environ.get("MAIL_SERVER", ""),
-    MAIL_FROM_NAME=environ.get("MAIL_USERNAME", ""),
+    MAIL_USERNAME=settings.mail_username,
+    MAIL_PASSWORD=settings.mail_password,
+    MAIL_FROM=settings.mail_from,
+    MAIL_PORT=settings.mail_port,
+    MAIL_SERVER=settings.mail_server,
+    MAIL_FROM_NAME=settings.mail_from_name,
     MAIL_STARTTLS=False,
     MAIL_SSL_TLS=True,
     USE_CREDENTIALS=True,
