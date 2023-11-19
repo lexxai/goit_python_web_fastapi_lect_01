@@ -328,6 +328,21 @@ typing-extensions = ">=4.8.0"
 all = ["email-validator (>=2.0.0)", "httpx (>=0.23.0)", "itsdangerous (>=1.1.0)", "jinja2 (>=2.11.2)", "orjson (>=3.2.1)", "pydantic-extra-types (>=2.0.0)", "pydantic-settings (>=2.0.0)", "python-multipart (>=0.0.5)", "pyyaml (>=5.3.1)", "ujson (>=4.0.1,!=4.0.2,!=4.1.0,!=4.2.0,!=4.3.0,!=5.0.0,!=5.1.0)", "uvicorn[standard] (>=0.12.0)"]
 
 [[package]]
+name = "fastapi-limiter"
+version = "0.1.5"
+description = "A request rate limiter for fastapi"
+optional = false
+python-versions = ">=3.7,<4.0"
+files = [
+    {file = "fastapi-limiter-0.1.5.tar.gz", hash = "sha256:546be0fef3b10c19ab3ed2b9c47c5a3ac1924e71210bc1254445a059430bf3b7"},
+    {file = "fastapi_limiter-0.1.5-py3-none-any.whl", hash = "sha256:f01681f3927b0750ff642e1d8dcde6c0f79d1b1dfd8164b909a74e7c75b8cce6"},
+]
+
+[package.dependencies]
+fastapi = "*"
+redis = ">=4.2.0rc1,<5.0.0"
+
+[[package]]
 name = "fastapi-mail"
 version = "1.4.1"
 description = "Simple lightweight mail library for FastApi"
@@ -956,13 +971,13 @@ files = [
 
 [[package]]
 name = "redis"
-version = "5.0.1"
+version = "4.6.0"
 description = "Python client for Redis database and key-value store"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "redis-5.0.1-py3-none-any.whl", hash = "sha256:ed4802971884ae19d640775ba3b03aa2e7bd5e8fb8dfaed2decce4d0fc48391f"},
-    {file = "redis-5.0.1.tar.gz", hash = "sha256:0dab495cd5753069d3bc650a0dde8a8f9edde16fc5691b689a566eda58100d0f"},
+    {file = "redis-4.6.0-py3-none-any.whl", hash = "sha256:e2b03db868160ee4591de3cb90d40ebb50a90dd302138775937f6a42b7ed183c"},
+    {file = "redis-4.6.0.tar.gz", hash = "sha256:585dc516b9eb042a619ef0a39c3d7d55fe81bdb4df09a52c9cdde0d07bf1aa7d"},
 ]
 
 [package.dependencies]
@@ -1315,4 +1330,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "eb1186bc2f86893328ab0590d275220e0346c7ed0fc89a6ca8addea700bee321"
+content-hash = "a17401b9dffc1ada011f9b1034da68e165342bf9c93ee358d24c1f8a3c6b3ff1"

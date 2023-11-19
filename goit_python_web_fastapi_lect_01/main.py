@@ -1,10 +1,14 @@
+from contextlib import asynccontextmanager
 import time
 from fastapi import FastAPI, Path, Query, Depends, HTTPException, Request, status
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from fastapi.middleware.cors import CORSMiddleware
+import redis.asyncio as redis
 import uvicorn
+from fastapi_limiter import FastAPILimiter
+from fastapi_limiter.depends import RateLimiter
 
 from sqlalchemy import text
 from sqlalchemy.orm import Session
@@ -13,17 +17,32 @@ from sqlalchemy.orm import Session
 from src.database.db import get_db
 from src.routes import cats, owners
 from src.routes.auth import auth
-# from src.routes.auth import auth_simple, auth_oauth2, auth_oauth2refresh, 
+
+# from src.routes.auth import auth_simple, auth_oauth2, auth_oauth2refresh,
 # from src.conf.auth import AUTH_LIB
+from src.conf.config import settings
 
 
-app = FastAPI()
+async def startup():
+    r = await redis.Redis(host=settings.redis_host, port=settings.redis_port, db=0)
+    await FastAPILimiter.init(r)
+    print("startup done")
 
-origins = [ 
-    "http://localhost:3000"
-    ]
 
-app.add_middleware(
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    print("lifespan before")
+    await startup()
+    yield
+    print("lifespan after")
+
+
+
+app = FastAPI(lifespan=lifespan)  # type: ignore
+
+origins = ["http://localhost:3000"]
+
+app.add_middleware( 
     CORSMiddleware,
     allow_origins=origins,
     allow_credentials=True,
@@ -35,7 +54,7 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 
 
-
+# @app.on_event("startup")
 
 
 @app.middleware("http")
@@ -47,11 +66,10 @@ async def custom_middleware(request: Request, call_next):
     return response
 
 
-@app.get("/", response_class=HTMLResponse)
+@app.get("/", response_class=HTMLResponse, dependencies=[Depends(RateLimiter(times=2, seconds=5))])
+# @app.get("/", response_class=HTMLResponse)
 async def main(request: Request):
-    return templates.TemplateResponse(
-        "index.html", {"request": request, "tilte": "Cats APP"}
-    )
+    return templates.TemplateResponse("index.html", {"request": request, "tilte": "Cats APP"})
 
 
 @app.get("/api/healthchecker")
@@ -60,9 +78,7 @@ def healthchecker(db: Session = Depends(get_db)):
         # Make request
         result = db.execute(text("SELECT 1")).fetchone()
         if result is None:
-            raise HTTPException(
-                status_code=500, detail="Database is not configured correctly"
-            )
+            raise HTTPException(status_code=500, detail="Database is not configured correctly")
         return {"message": "Welcome to FastAPI!"}
     except Exception as e:
         print(e)
