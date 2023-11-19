@@ -37,12 +37,11 @@ async def lifespan(app: FastAPI):
     print("lifespan after")
 
 
-
 app = FastAPI(lifespan=lifespan)  # type: ignore
 
 origins = ["http://localhost:3000"]
 
-app.add_middleware( 
+app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
     allow_credentials=True,
@@ -66,7 +65,12 @@ async def custom_middleware(request: Request, call_next):
     return response
 
 
-@app.get("/", response_class=HTMLResponse, dependencies=[Depends(RateLimiter(times=2, seconds=5))])
+@app.get(
+    "/",
+    response_class=HTMLResponse,
+    description="No more than 2 requests per 5 seconds",
+    dependencies=[Depends(RateLimiter(times=2, seconds=5))],
+)
 # @app.get("/", response_class=HTMLResponse)
 async def main(request: Request):
     return templates.TemplateResponse("index.html", {"request": request, "tilte": "Cats APP"})

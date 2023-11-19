@@ -24,6 +24,7 @@ allowed_operations_remove = RoleAccess([Role.admin])
 @router.get(
     "",
     response_model=List[CatResponse],
+    description="No more than 2 requests per 5 seconds",
     dependencies=[Depends(allowed_operations_get), Depends(RateLimiter(times=2, seconds=5))],
 )
 async def get_cats(
