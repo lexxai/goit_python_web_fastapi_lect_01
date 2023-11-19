@@ -14,7 +14,7 @@ from src.database.db import get_db
 from src.routes import cats, owners
 from src.routes.auth import auth
 # from src.routes.auth import auth_simple, auth_oauth2, auth_oauth2refresh, 
-from src.conf.auth import AUTH_LIB
+# from src.conf.auth import AUTH_LIB
 
 
 app = FastAPI()
