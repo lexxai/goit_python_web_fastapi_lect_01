@@ -4,15 +4,15 @@ from typing import Any, Optional
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-from sqlalchemy.orm import Session
+# from sqlalchemy.orm import Session
 from jose import JWTError, jwt
-import redis as redis
-from os import environ
 
+
+from src.conf.config import settings
 from src.database.db import get_db
-from src.database.models import User
+# from src.database.models import User
 from .auth_token import AuthToken
-from src.repository import users as repository_users
+# from src.repository import users as repository_users
 from src.shemas.auth import AccessTokenRefreshResponse
 
 
@@ -20,7 +20,13 @@ class Auth(AuthToken):
     auth_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
     auth_response_model = OAuth2PasswordRequestForm
     token_response_model = AccessTokenRefreshResponse
-    r = redis.Redis(host=environ.get("REDIS_HOST","localhost"), port=int(environ.get("REDIS_PORT",6379)), db=0)
+
+        # constructor
+    def __init__(
+        self, secret_key: str, algorithm: str | None = None
+    ) -> None:
+        assert secret_key, "MISSED SECRET_KEY"
+        super().__init__(secret_key=secret_key, algorithm=algorithm)
 
     # define a function to generate a new refresh token
     def create_refresh_token(self, data: dict, expires_delta: Optional[float] = None) -> tuple[str, datetime]:
@@ -90,4 +96,4 @@ class Auth(AuthToken):
         return None
 
 
-auth_service = Auth()
+auth_service = Auth(secret_key=settings.token_secret_key, algorithm=settings.token_algorithm)

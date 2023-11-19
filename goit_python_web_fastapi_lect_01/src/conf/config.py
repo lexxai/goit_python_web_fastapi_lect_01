@@ -4,13 +4,15 @@ from pathlib import Path
 from dotenv import load_dotenv
 from pydantic_settings import BaseSettings
 
-load_dotenv(Path(__file__).resolve().parent.parent.parent.parent.joinpath(".env"))
+BASE_PATH = Path(__file__).resolve().parent.parent.parent.parent
+load_dotenv(BASE_PATH.joinpath(".env"))
 APP_ENV = environ.get("APP_ENV")
+#print(APP_ENV)
 
 # SQLALCHEMY_DATABASE_URL=postgresql+psycopg2://${POSTGRES_USERNAME}:${POSTGRES_PASSWORD}@localhost:${POSTGRES_PORT}/${POSTGRES_DB}
 
 class Settings(BaseSettings):
-    sqlalchemy_database_url: str = ""
+    sqlalchemy_database_url: str | None = None
     token_secret_key: str = "some_SuPeR_key"
     token_algorithm: str = "HS256"
     mail_username: str = "user@example.com"
@@ -25,12 +27,12 @@ class Settings(BaseSettings):
     class Config:
         extra = "ignore"
         # TESTED FIRST USED ENV variables, even if file defined.
-        env_file = f".env-{APP_ENV}" if APP_ENV else ".env"
+        env_file = BASE_PATH.joinpath(f".env-{APP_ENV}") if APP_ENV else BASE_PATH.joinpath(".env")
         env_file_encoding = "utf-8"
 
 
 settings = Settings()
 
-
 if __name__ == "__main__":
+    print(settings.Config.env_file)
     print(settings)
