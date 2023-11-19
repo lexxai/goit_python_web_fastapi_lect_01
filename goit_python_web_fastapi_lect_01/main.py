@@ -55,27 +55,27 @@ app.add_middleware(
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 
-user_agent_ban_list = [r"Gecko", r"Python-urllib"]
-@app.middleware("http")
-async def user_agent_ban_middleware(request: Request, call_next: Callable):
-    user_agent = request.headers.get("user-agent")
-    for ban_pattern in user_agent_ban_list:
-        if re.search(ban_pattern, user_agent): # type: ignore
-            return JSONResponse(status_code=status.HTTP_403_FORBIDDEN, content={"detail": "You are banned"})
-    response = await call_next(request)
-    return response
+# user_agent_ban_list = [r"Gecko", r"Python-urllib"]
+# @app.middleware("http")
+# async def user_agent_ban_middleware(request: Request, call_next: Callable):
+#     user_agent = request.headers.get("user-agent")
+#     for ban_pattern in user_agent_ban_list:
+#         if re.search(ban_pattern, user_agent): # type: ignore
+#             return JSONResponse(status_code=status.HTTP_403_FORBIDDEN, content={"detail": "You are banned"})
+#     response = await call_next(request)
+#     return response
 
 
 # @app.on_event("startup")
-ALLOWED_IPS = [ip_address('192.168.1.0'), ip_address('172.16.0.0'), ip_address("127.0.0.1")]
+# ALLOWED_IPS = [ip_address('192.168.1.0'), ip_address('172.16.0.0'), ip_address("127.0.0.1")]
 
-@app.middleware("http")
-async def limit_access_by_ip(request: Request, call_next: Callable):
-    ip = ip_address(request.client.host)
-    if ip not in ALLOWED_IPS:
-        return JSONResponse(status_code=status.HTTP_402_PAYMENT_REQUIRED, content={"detail": "Not allowed IP address"})
-    response = await call_next(request)
-    return response
+# @app.middleware("http")
+# async def limit_access_by_ip(request: Request, call_next: Callable):
+#     ip = ip_address(request.client.host)
+#     if ip not in ALLOWED_IPS:
+#         return JSONResponse(status_code=status.HTTP_402_PAYMENT_REQUIRED, content={"detail": "Not allowed IP address"})
+#     response = await call_next(request)
+#     return response
 
 
 
