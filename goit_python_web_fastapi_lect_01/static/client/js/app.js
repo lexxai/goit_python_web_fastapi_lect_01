@@ -43,7 +43,7 @@ get_refresh_token = async () => {
   get_refresh_token.counter = 0;
 };
 
-get_cats = async (cats) => {
+get_cats = async (cats = document.getElementById("cats")) => {
   get_cats.counter = (get_cats.counter || 0) + 1;
   setLoading(cats);
   const URL = `${BASE_URL}/api/cats`;
@@ -75,7 +75,7 @@ get_cats = async (cats) => {
   }
 };
 
-get_owners = async (owners) => {
+get_owners = async (owners = document.getElementById("owners")) => {
   get_owners.counter = (get_owners.counter || 0) + 1;
   setLoading(owners);
   const URL = `${BASE_URL}/api/owners`;
@@ -122,7 +122,7 @@ ownerCreate.addEventListener("submit", async (e) => {
   });
   if (response.status == 201) {
     ownerCreate.reset();
-    get_owners(document.getElementById('owners'));
+    get_owners();
   } else if (response.status == 401) {
     token = await get_refresh_token();
     console.log("Try again");
@@ -131,8 +131,8 @@ ownerCreate.addEventListener("submit", async (e) => {
   }
 });
 
-get_cats(document.getElementById('cats'));
-get_owners(document.getElementById('owners'));
+get_cats();
+get_owners();
 
 // setTimeout(() => {
 //   get_cats(document.getElementById('cats'));

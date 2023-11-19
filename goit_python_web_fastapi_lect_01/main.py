@@ -56,7 +56,7 @@ templates = Jinja2Templates(directory="templates")
 
 
 # @app.on_event("startup")
-ALLOWED_IPS = [ip_address('192.168.1.0'), ip_address('172.16.0.0'), ip_address("127.0.0.2")]
+ALLOWED_IPS = [ip_address('192.168.1.0'), ip_address('172.16.0.0'), ip_address("127.0.0.1")]
 
 @app.middleware("http")
 async def limit_access_by_ip(request: Request, call_next: Callable):
