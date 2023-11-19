@@ -1,17 +1,19 @@
 from contextlib import asynccontextmanager
 import time
+from ipaddress import ip_address
+from typing import Callable
+
 from fastapi import FastAPI, Path, Query, Depends, HTTPException, Request, status
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from fastapi.middleware.cors import CORSMiddleware
-import redis.asyncio as redis
-import uvicorn
 from fastapi_limiter import FastAPILimiter
 from fastapi_limiter.depends import RateLimiter
-
 from sqlalchemy import text
 from sqlalchemy.orm import Session
+import redis.asyncio as redis
+import uvicorn
 
 
 from src.database.db import get_db
@@ -39,14 +41,14 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)  # type: ignore
 
-origins = ["http://localhost:3000"]
+origins = ["http://127.0.0.1:3000"]
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=[],
+    allow_headers=[],
 )
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -54,6 +56,16 @@ templates = Jinja2Templates(directory="templates")
 
 
 # @app.on_event("startup")
+
+banned_ips = [ip_address("192.168.1.1"), ip_address("192.168.1.2"), ip_address("127.0.0.2")]
+
+@app.middleware("http")
+async def ban_ips(request: Request, call_next: Callable):
+    ip = ip_address(request.client.host)
+    if ip in banned_ips:
+        return JSONResponse(status_code=status.HTTP_403_FORBIDDEN, content={"detail": "You are banned"})
+    response = await call_next(request)
+    return response
 
 
 @app.middleware("http")
