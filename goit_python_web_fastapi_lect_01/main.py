@@ -47,8 +47,8 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
     allow_credentials=True,
-    allow_methods=[],
-    allow_headers=[],
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -56,16 +56,28 @@ templates = Jinja2Templates(directory="templates")
 
 
 # @app.on_event("startup")
-
-banned_ips = [ip_address("192.168.1.1"), ip_address("192.168.1.2"), ip_address("127.0.0.2")]
+ALLOWED_IPS = [ip_address('192.168.1.0'), ip_address('172.16.0.0'), ip_address("127.0.0.2")]
 
 @app.middleware("http")
-async def ban_ips(request: Request, call_next: Callable):
+async def limit_access_by_ip(request: Request, call_next: Callable):
     ip = ip_address(request.client.host)
-    if ip in banned_ips:
-        return JSONResponse(status_code=status.HTTP_403_FORBIDDEN, content={"detail": "You are banned"})
+    if ip not in ALLOWED_IPS:
+        return JSONResponse(status_code=status.HTTP_402_PAYMENT_REQUIRED, content={"detail": "Not allowed IP address"})
     response = await call_next(request)
     return response
+
+
+
+
+# banned_ips = [ip_address("192.168.1.1"), ip_address("192.168.1.2"), ip_address("127.0.0.2")]
+
+# @app.middleware("http")
+# async def ban_ips(request: Request, call_next: Callable):
+#     ip = ip_address(request.client.host)
+#     if ip in banned_ips:
+#         return JSONResponse(status_code=status.HTTP_403_FORBIDDEN, content={"detail": "You are banned"})
+#     response = await call_next(request)
+#     return response
 
 
 @app.middleware("http")
