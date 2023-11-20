@@ -16,7 +16,7 @@ from src.database.db import get_db
 from src.database.models import User
 from src.shemas.users import UserDetailResponse, UserModel
 from src.repository.auth import auth as repository_auth
-from src.services.auth.auth import auth_service, Auth
+from src.services.auth.auth import auth_service
 from src.repository import users as repository_users
 from src.shemas.auth import RequestEmail
 

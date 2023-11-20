@@ -21,7 +21,7 @@ class Auth(AuthToken):
     auth_response_model = OAuth2PasswordRequestForm
     token_response_model = AccessTokenRefreshResponse
 
-        # constructor
+    # constructor
     def __init__(
         self, secret_key: str, algorithm: str | None = None
     ) -> None:
