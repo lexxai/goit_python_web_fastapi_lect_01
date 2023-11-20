@@ -18,7 +18,7 @@ class Cloudinary:
     @staticmethod
     def generate_public_id_by_email(email: str, app_name: str = settings.app_name) -> str:
         name = hashlib.sha224(email.encode("utf-8")).hexdigest()[:16]
-        return f"{app_name}/{name}"
+        return f"APP_{app_name}/{name}"
 
     @staticmethod
     def upload(file, public_id: str):

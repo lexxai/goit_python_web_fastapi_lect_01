@@ -139,6 +139,10 @@ After wrong refresh_token used, refresh_token in DB cleared
 ![](doc/avatar-cloudinary-02.png)
 ### Updated DB user info on Database and Redis Cache
 ![](doc/avatar-me-02.png)
+### Hashed user email on url. POSTMAN.
+![](doc/avatar-cloudinary-hash-01.png)
+
+![](doc/avatar-cloudinary-hash-02.png)
 
 ## DOCKER
 ### .env
