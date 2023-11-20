@@ -1,3 +1,4 @@
+import logging
 from fastapi import APIRouter, Depends, status, UploadFile, File
 from sqlalchemy.orm import Session
 import cloudinary
@@ -11,6 +12,8 @@ from src.conf.config import settings
 from src.shemas.users import UserDetailResponse, UserResponse
 
 router = APIRouter(prefix="/users", tags=["users"])
+
+logger = logging.getLogger(f"{settings.app_name}.{__name__}")
 
 
 @router.get("/me/", response_model=UserResponse, response_model_exclude_none=True)

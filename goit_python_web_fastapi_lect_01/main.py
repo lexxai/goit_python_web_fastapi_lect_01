@@ -3,6 +3,8 @@ import re
 import time
 from ipaddress import ip_address
 from typing import Callable
+import logging
+import colorlog
 
 from fastapi import FastAPI, Path, Query, Depends, HTTPException, Request, status
 from fastapi.responses import HTMLResponse, JSONResponse
@@ -27,19 +29,27 @@ from src.routes.auth import auth
 from src.conf.config import settings
 
 
+logger = logging.getLogger(f"{settings.app_name}")
+logger.setLevel(logging.INFO)
+handler = colorlog.StreamHandler()
+handler.setLevel(logging.INFO)
+handler.setFormatter(colorlog.ColoredFormatter('%(yellow)s%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
+logger.addHandler(handler)
+
+
 async def startup():
     r = await redis.Redis(host=settings.redis_host, port=settings.redis_port, db=0)
     await FastAPILimiter.init(r)
-    print("startup done")
+    logger.info("startup done")
 
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    print("lifespan before")
-    await startup()
-    yield
-    print("lifespan after")
-
+# @asynccontextmanager
+# async def lifespan(app: FastAPI):
+#     print("lifespan before")
+#     await startup()
+#     yield
+#     print("lifespan after")
+lifespan = None
 
 app = FastAPI(lifespan=lifespan)  # type: ignore
 
@@ -77,8 +87,6 @@ templates = Jinja2Templates(directory="templates")
 #         return JSONResponse(status_code=status.HTTP_402_PAYMENT_REQUIRED, content={"detail": "Not allowed IP address"})
 #     response = await call_next(request)
 #     return response
-
-
 
 
 # banned_ips = [ip_address("192.168.1.1"), ip_address("192.168.1.2"), ip_address("127.0.0.2")]
@@ -137,12 +145,11 @@ def healthchecker(db: Session = Depends(get_db)):
 #     app.include_router(auth_oauth2.router, prefix="/api/auth")
 
 app.include_router(auth.router, prefix="/api/auth")
-
 app.include_router(owners.router, prefix="/api")
 app.include_router(cats.router, prefix="/api")
-app.include_router(users.router, prefix='/api')
+app.include_router(users.router, prefix="/api")
 
 
 # print("MAIN", __name__)
 if __name__ == "__main__":
-    uvicorn.run("main:app", host="0.0.0.0", port=9000, reload=True)
+    uvicorn.run("main:app", host=settings.app_host, port=settings.app_port, reload=True)

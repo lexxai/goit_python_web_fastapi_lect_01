@@ -1,19 +1,13 @@
-import pickle
+import logging
 from sqlalchemy.orm import Session
 
-
-# from fastapi import Depends
-
+from src.conf.config import settings
 from src.database.models import User
 from src.services.auth.auth import auth_service
 from src.repository import users as repository_users
 
-# from src.database.db import get_db
 
-
-# auth_service = Auth()
-
-
+logger = logging.getLogger(f"{settings.app_name}.{__name__}")
 
 
 async def a_get_current_user(token: str | None, db: Session) -> User | None:

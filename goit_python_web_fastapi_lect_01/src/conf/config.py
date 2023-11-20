@@ -12,6 +12,9 @@ APP_ENV = environ.get("APP_ENV")
 # SQLALCHEMY_DATABASE_URL=postgresql+psycopg2://${POSTGRES_USERNAME}:${POSTGRES_PASSWORD}@localhost:${POSTGRES_PORT}/${POSTGRES_DB}
 
 class Settings(BaseSettings):
+    app_name: str = "cats"
+    app_host: str = "0.0.0.0"
+    app_port: int = 9000
     sqlalchemy_database_url: str | None = None
     token_secret_key: str = "some_SuPeR_key"
     token_algorithm: str = "HS256"
@@ -23,9 +26,9 @@ class Settings(BaseSettings):
     mail_from_name: str = ""
     redis_host: str = "localhost"
     redis_port: int = 6379
-    cloudinary_name: str
-    cloudinary_api_key: str
-    cloudinary_api_secret: str
+    cloudinary_name: str  = "some_name"
+    cloudinary_api_key: str = "0000000000000"
+    cloudinary_api_secret: str = "some_secret"
 
     class Config:
         extra = "ignore"

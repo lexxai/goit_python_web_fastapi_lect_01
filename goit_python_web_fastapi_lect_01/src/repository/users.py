@@ -7,20 +7,29 @@ import redis.asyncio as redis
 from src.shemas.users import UserModel
 from src.conf.config import settings
 from src.database.models import User
+import logging
+
+logger = logging.getLogger(f"{settings.app_name}.{__name__}")
+
+
 
 
 redis_conn = redis.Redis(host=settings.redis_host, port=int(settings.redis_port), db=0)
+
 
 async def get_cache_user_by_email(email: str) -> User | None:
     if email:
         try:
             user_bytes = await redis_conn.get(f"user:{email}")
-            user = pickle.loads(user_bytes)   # type: ignore
-            print("Get from Redis", str(user.email))
+            if user_bytes is None:
+                return None
+            user = pickle.loads(user_bytes)  # type: ignore
+            logger.info(f"Get from Redis  {str(user.email)}")
         except Exception as err:
-            print("Error Redis read", err)
+            logger.info(f"Error Redis read {err}")
             user = None
         return user
+
 
 async def update_cache_user(user: User):
     if user:
@@ -32,10 +41,11 @@ async def update_cache_user(user: User):
         except Exception as err:
             print("Error redis save", err)
 
+
 async def create_user(body: UserModel, db: Session) -> User | None:
     try:
         g = Gravatar(body.email)
-        new_user = User(**body.model_dump(), avatar = g.get_image())
+        new_user = User(**body.model_dump(), avatar=g.get_image())
         db.add(new_user)
         db.commit()
         db.refresh(new_user)
@@ -63,9 +73,7 @@ async def get_user_by_name(username: str | None, db: Session) -> User | None:
     return None
 
 
-async def update_user_refresh_token(
-    user: User, refresh_token: str | None, db: Session
-) -> str | None:
+async def update_user_refresh_token(user: User, refresh_token: str | None, db: Session) -> str | None:
     if user:
         try:
             user.refresh_token = refresh_token
@@ -77,9 +85,7 @@ async def update_user_refresh_token(
     return None
 
 
-async def update_by_name_refresh_token(
-    username: str | None, refresh_token: str | None, db: Session
-) -> str | None:
+async def update_by_name_refresh_token(username: str | None, refresh_token: str | None, db: Session) -> str | None:
     if username and refresh_token:
         try:
             user = await get_user_by_name(username, db)

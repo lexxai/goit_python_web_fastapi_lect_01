@@ -1,3 +1,6 @@
+import logging
+
+
 from typing import Annotated, Any, List
 from fastapi import APIRouter, Depends, HTTPException, Request, Response, Security, status, Cookie, BackgroundTasks
 from fastapi.security import (
@@ -8,6 +11,7 @@ from fastapi.security import (
 from sqlalchemy.orm import Session
 from src.services.emails import send_email
 
+from src.conf.config import settings
 from src.database.db import get_db
 from src.database.models import User
 from src.shemas.users import UserDetailResponse, UserModel
@@ -15,6 +19,9 @@ from src.repository.auth import auth as repository_auth
 from src.services.auth.auth import auth_service, Auth
 from src.repository import users as repository_users
 from src.shemas.auth import RequestEmail
+
+
+logger = logging.getLogger(f"{settings.app_name}.{__name__}")
 
 router = APIRouter(prefix="", tags=["Auth"])
 
@@ -39,7 +46,7 @@ async def get_current_user(
     )
     user = None
     new_access_token = None
-    print(f"{access_token=}, {refresh_token=}, {token=}")
+    logger.info(f"{access_token=}, {refresh_token=}, {token=}")
     if not token:
         print("used cookie access_token")
         token = access_token
