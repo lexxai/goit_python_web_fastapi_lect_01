@@ -12,8 +12,6 @@ import logging
 logger = logging.getLogger(f"{settings.app_name}.{__name__}")
 
 
-
-
 redis_conn = redis.Redis(host=settings.redis_host, port=int(settings.redis_port), db=0)
 
 
@@ -26,7 +24,7 @@ async def get_cache_user_by_email(email: str) -> User | None:
             user = pickle.loads(user_bytes)  # type: ignore
             logger.info(f"Get from Redis  {str(user.email)}")
         except Exception as err:
-            logger.info(f"Error Redis read {err}")
+            logger.error(f"Error Redis read {err}")
             user = None
         return user
 
@@ -37,9 +35,9 @@ async def update_cache_user(user: User):
         try:
             await redis_conn.set(f"user:{email}", pickle.dumps(user))
             await redis_conn.expire(f"user:{email}", 900)
-            print("Save to Redis", str(user.email))
+            logger.info(f"Save to Redis {str(user.email)}")
         except Exception as err:
-            print("Error redis save", err)
+            logger.error(f"Error redis save, {err}")
 
 
 async def create_user(body: UserModel, db: Session) -> User | None:

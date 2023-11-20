@@ -144,6 +144,9 @@ After wrong refresh_token used, refresh_token in DB cleared
 
 ![](doc/avatar-cloudinary-hash-02.png)
 
+## Logger
+![](doc/logger-01.png)
+
 ## DOCKER
 ### .env
 example: doc\dot.env-example

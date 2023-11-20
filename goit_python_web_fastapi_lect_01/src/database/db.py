@@ -19,7 +19,7 @@ assert SQLALCHEMY_DATABASE_URL is not None, "SQLALCHEMY_DATABASE_URL UNDEFINED"
 # DBSession = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 engine = create_engine(
-    SQLALCHEMY_DATABASE_URL, echo=True  
+    SQLALCHEMY_DATABASE_URL, echo=False  
 )
 
 DBSession = sessionmaker(autocommit=False, autoflush=False, bind=engine)

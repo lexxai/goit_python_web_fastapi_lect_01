@@ -29,6 +29,7 @@ security = HTTPBearer()
 
 SET_COOKIES = False
 
+
 async def get_current_user(
     response: Response,
     access_token: Annotated[str | None, Cookie()] = None,
@@ -48,7 +49,7 @@ async def get_current_user(
     new_access_token = None
     logger.info(f"{access_token=}, {refresh_token=}, {token=}")
     if not token:
-        print("used cookie access_token")
+        logger.info("used cookie access_token")
         token = access_token
     if token:
         user = await repository_auth.a_get_current_user(token, db)
@@ -56,7 +57,7 @@ async def get_current_user(
             user = await repository_auth.a_get_current_user(access_token, db)
         if not user and refresh_token:
             result = auth_service.refresh_access_token(refresh_token)
-            print(f"refresh_access_token  {result=}")
+            logger.info(f"refresh_access_token  {result=}")
             if result:
                 new_access_token = result.get("access_token")
                 email = result.get("email")
@@ -75,7 +76,6 @@ async def get_current_user(
     if user is None:
         raise credentials_exception
     return user
-
 
 
 @router.post(
@@ -146,7 +146,7 @@ async def login(
         else:
             response.delete_cookie(key="access_token", httponly=True, path="/api/")
         if new_access_token and refresh_token:
-            print(f"{token.get('expire_refresh_token')=}")
+            logger.info(f"{token.get('expire_refresh_token')=}")
             response.set_cookie(
                 key="refresh_token",
                 value=refresh_token,
@@ -156,10 +156,8 @@ async def login(
             )
         else:
             response.delete_cookie(key="refresh_token", httponly=True, path="/api/")
-    print("login", token)
+    logger.info("login: {token=}")
     return token
-
-
 
 
 async def get_current_user_dbtoken(
@@ -179,7 +177,7 @@ async def get_current_user_dbtoken(
     )
     user = None
     new_access_token = None
-    print(f"{access_token=}, {refresh_token=}")
+    logger.info(f"{access_token=}, {refresh_token=}")
     if not token:
         token = access_token
     if token:
@@ -190,7 +188,7 @@ async def get_current_user_dbtoken(
             # print(f"refresh_access_token {email=} {user.email} {user.refresh_token}")  # type: ignore
             if refresh_token == user.refresh_token:  # type: ignore
                 result = auth_service.refresh_access_token(refresh_token)
-                print(f"refresh_access_token  {result=}")
+                logger.info(f"refresh_access_token  {result=}")
                 if result:
                     new_access_token = result.get("access_token")
                     email = result.get("email")
@@ -235,11 +233,11 @@ async def refresh_token(
     db: Session = Depends(get_db),
 ):
     token: str = credentials.credentials
-    print(f"refresh_token {token=}")
+    logger.info(f"refresh_token {token=}")
     if not token and refresh_token:
         token = refresh_token
     email = auth_service.decode_refresh_token(token)
-    print(f"refresh_token {email=}")
+    logger.info(f"refresh_token {email=}")
     user: User | None = await repository_users.get_user_by_email(email, db)
     if user and user.refresh_token != token:  # type: ignore
         await repository_users.update_user_refresh_token(user, None, db)
@@ -297,12 +295,13 @@ async def confirmed_email(token: str, db: Session = Depends(get_db)):
     raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Verification error")
 
 
-@router.post('/request_email')
-async def request_email(body: RequestEmail, background_tasks: BackgroundTasks, request: Request,
-                        db: Session = Depends(get_db)):
+@router.post("/request_email")
+async def request_email(
+    body: RequestEmail, background_tasks: BackgroundTasks, request: Request, db: Session = Depends(get_db)
+):
     user = await repository_users.get_user_by_email(body.email, db)
     if user:
         if bool(user.confirmed):
-                return {"message": "Your email is already confirmed"}
+            return {"message": "Your email is already confirmed"}
         background_tasks.add_task(send_email, str(user.email), str(user.username), str(request.base_url))
     return {"message": "Check your email for confirmation."}
