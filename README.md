@@ -129,6 +129,17 @@ After wrong refresh_token used, refresh_token in DB cleared
 ### Get from redis
 ![get redis](doc/redis-01.png)
 
+
+## Cloudinary
+### OLD Gravatery avatar
+![](doc/avatar-me-01.png)
+### Uplaod image to cloud Cloudinary
+![](doc/avatar-cloudinary-01.png)
+### Image link on cloud Cloudinary
+![](doc/avatar-cloudinary-02.png)
+### Updated DB user info on Database and Redis Cache
+![](doc/avatar-me-02.png)
+
 ## DOCKER
 ### .env
 example: doc\dot.env-example
