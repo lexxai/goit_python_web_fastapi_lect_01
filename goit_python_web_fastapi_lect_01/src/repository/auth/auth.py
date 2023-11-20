@@ -1,9 +1,9 @@
 import pickle
 from sqlalchemy.orm import Session
-import redis as redis
+
 
 # from fastapi import Depends
-from src.conf.config import settings
+
 from src.database.models import User
 from src.services.auth.auth import auth_service
 from src.repository import users as repository_users
@@ -13,7 +13,7 @@ from src.repository import users as repository_users
 
 # auth_service = Auth()
 
-redis_conn = redis.Redis(host=settings.redis_host, port=int(settings.redis_port), db=0)
+
 
 
 async def a_get_current_user(token: str | None, db: Session) -> User | None:
@@ -22,23 +22,11 @@ async def a_get_current_user(token: str | None, db: Session) -> User | None:
     email = auth_service.decode_jwt(token)
     if email is None:
         return None
-    try:
-        user = redis_conn.get(f"user:{email}")
-    except Exception as err:
-        print("Error Redis read", err)
-        user = None
+    user = await repository_users.get_cache_user_by_email(email)
     if user is None:
         user = await repository_users.get_user_by_email(email, db)
         if user:
-            try:
-                redis_conn.set(f"user:{email}", pickle.dumps(user))
-                redis_conn.expire(f"user:{email}", 900)
-                print("Save to Redis", str(user.email))
-            except Exception as err:
-                print("Error redis save", err)
-    else:
-        user = pickle.loads(user)  # type: ignore
-        print("Get from Redis", str(user.email))
+            await repository_users.update_cache_user(user)
 
     return user
 

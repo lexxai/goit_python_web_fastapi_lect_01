@@ -18,8 +18,9 @@ import uvicorn
 
 
 from src.database.db import get_db
-from src.routes import cats, owners
+from src.routes import cats, owners, users
 from src.routes.auth import auth
+
 
 # from src.routes.auth import auth_simple, auth_oauth2, auth_oauth2refresh,
 # from src.conf.auth import AUTH_LIB
@@ -139,6 +140,7 @@ app.include_router(auth.router, prefix="/api/auth")
 
 app.include_router(owners.router, prefix="/api")
 app.include_router(cats.router, prefix="/api")
+app.include_router(users.router, prefix='/api')
 
 
 # print("MAIN", __name__)

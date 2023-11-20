@@ -26,19 +26,18 @@ class NewUserResponse(BaseModel):
 #     class Config:
 #         from_attributes = True
 
+class UserResponse(BaseModel):
+    id: int
+    username: str
+    email: str
+    avatar: str | None
+    role: Role
+
+    class Config:
+        from_attributes = True
 
 
-class UserDetailResponse(BaseModel):
-    class UserResponse(BaseModel):
-        id: int
-        username: str
-        email: str
-        avatar: str | None
-        role: Role
-
-        class Config:
-            from_attributes = True
-            
+class UserDetailResponse(BaseModel):           
     detail: str
     user: UserResponse
 
